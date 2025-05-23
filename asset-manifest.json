@@ -1,0 +1,16 @@
+{
+  "files": {
+    "main.css": "/snd-extension-lib/static/css/main.f855e6bc.css",
+    "main.js": "/snd-extension-lib/static/js/main.a8fd170f.js",
+    "static/js/453.6a31d905.chunk.js": "/snd-extension-lib/static/js/453.6a31d905.chunk.js",
+    "static/media/logo.svg": "/snd-extension-lib/static/media/logo.6ce24c58023cc2f8fd88fe9d219db6c6.svg",
+    "index.html": "/snd-extension-lib/index.html",
+    "main.f855e6bc.css.map": "/snd-extension-lib/static/css/main.f855e6bc.css.map",
+    "main.a8fd170f.js.map": "/snd-extension-lib/static/js/main.a8fd170f.js.map",
+    "453.6a31d905.chunk.js.map": "/snd-extension-lib/static/js/453.6a31d905.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.f855e6bc.css",
+    "static/js/main.a8fd170f.js"
+  ]
+}
