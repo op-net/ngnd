@@ -1,7 +1,7 @@
 {
-  "name": "snd-extension-lib",
+  "name": "ngnd",
   "version": "0.1.0",
-  "homepage": "https://op-net.github.io/snd-extension-lib",
+  "homepage": "https://op-net.github.io/ngnd",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.14.0",

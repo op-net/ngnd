@@ -1,2 +1,2 @@
-# snd-extension-lib
-Extension of data for sndlib 
+# NGND
+Next Generation Network Design

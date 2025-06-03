@@ -39,7 +39,7 @@ const HomePage = () => {
       {/* Main content */}
       <Box component="main" sx={{ flexGrow: 1, p: 4 }}>
         <Typography variant="h3" gutterBottom>
-          Welcome to SND extension lib
+          Welcome to Next Generation Network Design database.
         </Typography>
         <Typography variant="body1" color="text.secondary">
           (TODO text)
