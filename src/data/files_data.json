@@ -1,0 +1,11 @@
+[
+    {
+        "networkName": "polska",
+        "nodesNumber": 12,
+        "linksNumber": 18,
+        "folderPath": "data/polska",
+        "xmlFile": "polska.xml",
+        "jsonFile": "polska.json",
+        "htmlFile": "polska.html"
+    }
+]
