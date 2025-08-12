@@ -6,4 +6,13 @@ export interface NetworkData {
   xmlFile: string;
   jsonFile: string;
   htmlFile: string;
+  others: {
+    versionName: string;
+    jsonFile: string;
+    xmlFile: string;
+  }[];
+  examples: {
+    description: string;
+    pngFile: string;
+  }[];
 }
