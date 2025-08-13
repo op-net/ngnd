@@ -1,4 +1,4 @@
-import { Box, Typography, Paper, List, ListItem, ListItemText } from "@mui/material";
+import { Box, Typography, Paper, List, ListItem, ListItemText, Link } from "@mui/material";
 import Sidebar from "./Sidebar";
 
 const Contributors = () => {
@@ -19,20 +19,33 @@ const Contributors = () => {
             <ListItem>
               <ListItemText
                 primary="Miguel Mendoza"
-                secondary="Universidad Politécnica de Madrid — Front-end development, OSNR & distance data integration, documentation"
+                secondary="Universidad Politécnica de Madrid — OSNR & distance data integration"
               />
             </ListItem>
+            <Typography component="span">
+    Universidad Politécnica de Madrid — 
+    <Link href="mailto:m.mlarranaga@alumnos.upm.es">m.mlarranaga@alumnos.upm.es</Link>
+  </Typography>
             <ListItem>
               <ListItemText
                 primary="Nel Kulakowska"
-                secondary="Warsaw University of Technology — Network topology template design, data validation, architectural guidance"
+                secondary="Warsaw University of Technology — Math Algorithm design, Web page development and data validation"
+                
               />
+              <Typography component="span">
+    Warsaw University of Technology — 
+    <Link href="mailto:nel.kulakowska.stud@pw.edu.pl">nel.kulakowska.stud@pw.edu.pl</Link>
+  </Typography>
             </ListItem>
             <ListItem>
               <ListItemText
                 primary="Stanislaw Kozdrowski"
                 secondary="Supervisor, Warsaw University of Technology — Project oversight, optical network modeling review"
               />
+              <Typography component="span">
+    Warsaw University of Technology — 
+    <Link href="mailto:stanislaw.kozdrowski@pw.edu.pl">stanislaw.kozdrowski@pw.edu.pl</Link>
+  </Typography>
             </ListItem>
           </List>
         </Paper>
