@@ -1,4 +1,4 @@
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Button, Divider, Table, TableBody, TableCell, TableRow, Typography } from "@mui/material";
 import { NetworkData } from "./NetworkData";
 import React from "react";
 import { homepage_url } from "../constants";
@@ -11,18 +11,38 @@ interface NetworkDetailsProps {
 const NetworkDetails: React.FC<NetworkDetailsProps> = ({ network, onBack }) => {
     return (
         <>
-            <Button variant="text" sx={{ mt: 2 }} onClick={onBack}>
+            <Button sx={{ mt: 2, color: "#4fa944ff" }} onClick={onBack}>
                 ← Back to list
             </Button>
             <Typography variant="h4" gutterBottom>
                 {network.networkName}
             </Typography>
-            <Typography>Nodes: {network.nodesNumber}</Typography>
-            <Typography>Edges: {network.linksNumber}</Typography>
+            <Typography
+            sx={{
+                fontWeight: 'bold',
+                fontSize: "14pt",
+                fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+                color: '#333',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1, 
+                mb: 2,
+            }}
+            >
+            <span>Nodes: {network.nodesNumber}</span>
+            <span style={{ fontWeight: 'normal', fontSize: '1.2rem' }}>•</span>
+            <span>Edges: {network.linksNumber}</span>
+            </Typography>
+
             <Button
                 variant="contained"
-                color="primary"
-                sx={{ mb: 2 }}
+                sx={{
+                    mb: 2,
+                    backgroundColor: '#4fa944ff',
+                    '&:hover': {
+                        backgroundColor: '#3e8537ff'
+                    }
+                }}
                 href={`${homepage_url}/${network.folderPath}/${network.xmlFile}`}
                 download
                 target="_blank"
@@ -30,8 +50,26 @@ const NetworkDetails: React.FC<NetworkDetailsProps> = ({ network, onBack }) => {
             >
                 Download XML
             </Button>
+            <Button
+                variant="contained"
+                color="primary"
+                sx={{
+                    mb: 2,
+                    backgroundColor: '#4fa944ff',
+                    '&:hover': {
+                        backgroundColor: '#3e8537ff'
+                    }
+                }}
+                href={`${homepage_url}/${network.folderPath}/${network.jsonFile}`}
+                download
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                Download JSON
+            </Button>
             <Box
                 mt={3}
+                mb={3}
                 p={2}
                 border="1px solid #ccc"
                 borderRadius="8px"
@@ -48,6 +86,81 @@ const NetworkDetails: React.FC<NetworkDetailsProps> = ({ network, onBack }) => {
                         border: "none",
                     }}
                 />
+            </Box>
+            
+                          <Divider />
+
+            
+            <Box mt={3} mb={3}>
+                <Typography variant="h6">Other Versions:</Typography>
+                {network.others.map((other, index) => (
+                    <Box key={index} mb={1}>
+                        <Typography>{other.versionName}</Typography>
+                        <Button
+                            variant="outlined"
+                            href={`${homepage_url}/${network.folderPath}/${other.xmlFile}`}
+                            download
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            sx={{
+                                color: '#4fa944ff',           // text color
+                                borderColor: '#4fa944ff',    // outline color
+                                '&:hover': {
+                                    borderColor: '#3e8537ff',  // darker shade on hover
+                                    backgroundColor: '#e6f4e6', // subtle bg on hover (optional)
+                                },
+                            }}
+                        >
+                            Download XML
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            href={`${homepage_url}/${network.folderPath}/${other.jsonFile}`}
+                            download
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            sx={{
+                                color: '#4fa944ff',
+                                borderColor: '#4fa944ff',
+                                '&:hover': {
+                                    borderColor: '#3e8537ff',
+                                    backgroundColor: '#e6f4e6',
+                                },
+                            }}
+                        >
+                            Download JSON
+                        </Button>
+                    </Box>
+                ))}
+            </Box>
+            
+                          <Divider />
+
+            
+            <Box mt={3}>
+                <Typography variant="h6">Examples of Usage:</Typography>
+                <Table>
+                    <TableBody>
+                        {network.examples.map((example, index) => (
+                            <TableRow key={index}>
+                                <TableCell style={{ width: "50%", verticalAlign: "top" }}>
+                                    <img
+                                        src={`${homepage_url}/${network.folderPath}/${example.pngFile}`}
+                                        alt={example.pngFile}
+                                        style={{
+                                            width: "100%",
+                                            height: "auto",
+                                            objectFit: "contain"
+                                        }}
+                                    />
+                                </TableCell>
+                                <TableCell>
+                                    <Typography>{example.description}</Typography>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
             </Box>
         </>
     );

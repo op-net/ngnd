@@ -4,6 +4,7 @@ import { NetworkData } from "./NetworkData";
 import filesData from "../data/files_data.json";
 import Sidebar from "../Sidebar";
 import NetworkDetails from "./NetworkDetails";
+import { useNetwork } from "./NetworkContext";
 
 const renderNetworkList = (
   networks: NetworkData[],
@@ -13,9 +14,16 @@ const renderNetworkList = (
     {networks.map((network, index) => (
       <Button
         key={index}
-        variant="outlined"
+         sx={{
+                    mb: 2,
+                    color: '#ffffff',  
+                    backgroundColor: '#4fa944ff',
+                    '&:hover': {
+                        backgroundColor: '#3e8537ff'
+                    },
+                    textTransform: "none", width: "fit-content"
+                }}
         onClick={() => onSelect(network)}
-        sx={{ textTransform: "capitalize", width: "fit-content" }}
       >
         {network.networkName}
       </Button>
@@ -25,7 +33,7 @@ const renderNetworkList = (
 
 const Networks = () => {
   const [networks, setNetworks] = useState<NetworkData[]>([]);
-  const [selectedNetwork, setSelectedNetwork] = useState<NetworkData | null>(null);
+  const { selectedNetwork, setSelectedNetwork } = useNetwork();
 
   useEffect(() => {
     setNetworks(filesData);
