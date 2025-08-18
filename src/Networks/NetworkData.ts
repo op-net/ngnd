@@ -10,6 +10,7 @@ export interface NetworkData {
     versionName: string;
     jsonFile: string;
     xmlFile: string;
+    htmlFile: string;
   }[];
   examples: {
     description: string;

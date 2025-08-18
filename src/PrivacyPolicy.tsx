@@ -1,10 +1,8 @@
 import { Box, Typography, Paper, List, ListItem, ListItemText, Link } from "@mui/material";
-import Sidebar from "./Sidebar";
 
 const PrivacyPolicy = () => {
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh" }}>
-      <Sidebar />
+    <Box sx={{ display: "flex" }}>
       <Box p={4} width="100%" sx={{ flexGrow: 1 }}>
         <Typography variant="h3" component="h1" gutterBottom>
           Privacy Policy

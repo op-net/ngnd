@@ -9,14 +9,16 @@
         "htmlFile": "polska.html",
         "others": [
             {
-                "versionName": "used in",
-                "jsonFile": "polska.json",
-                "xmlFile": "polska.xml"
+                "versionName": "Used in ~20%",
+                "jsonFile": "polska_20.json",
+                "xmlFile": "polska_20.xml",
+                "htmlFile": "polska_20.html"
             },
             {
-                "versionName": "used in 2",
-                "jsonFile": "polska.json",
-                "xmlFile": "polska.xml"
+                "versionName": "Used in ~80%",
+                "jsonFile": "polska_80.json",
+                "xmlFile": "polska_80.xml",
+                "htmlFile": "polska_80.html"
             }
         ],
         "examples": [
@@ -25,5 +27,77 @@
                 "pngFile": "polska_ampl.png"
             }
         ]
+    },
+    {
+        "networkName": "nobel eu",
+        "nodesNumber": 28,
+        "linksNumber": 41,
+        "folderPath": "data/nobel_eu",
+        "xmlFile": "nobel_eu.xml",
+        "jsonFile": "nobel_eu.json",
+        "htmlFile": "nobel_eu.html",
+        "others": [
+            {
+                "versionName": "Used in ~20%",
+                "jsonFile": "nobel_eu_20.json",
+                "xmlFile": "nobel_eu_20.xml",
+                "htmlFile": "nobel_eu_20.html"
+            },
+            {
+                "versionName": "Used in ~80%",
+                "jsonFile": "nobel_eu_80.json",
+                "xmlFile": "nobel_eu_80.xml",
+                "htmlFile": "nobel_eu_80.html"
+            }
+        ],
+        "examples": []
+    },
+    {
+        "networkName": "janos us ca",
+        "nodesNumber": 39,
+        "linksNumber": 61,
+        "folderPath": "data/janos_us_ca",
+        "xmlFile": "janos_us_ca.xml",
+        "jsonFile": "janos_us_ca.json",
+        "htmlFile": "janos_us_ca.html",
+        "others": [
+            {
+                "versionName": "Used in ~20%",
+                "jsonFile": "janos_us_ca_20.json",
+                "xmlFile": "janos_us_ca_20.xml",
+                "htmlFile": "janos_us_ca_20.html"
+            },
+            {
+                "versionName": "Used in ~80%",
+                "jsonFile": "janos_us_ca_80.json",
+                "xmlFile": "janos_us_ca_80.xml",
+                "htmlFile": "janos_us_ca_80.html"
+            }
+        ],
+        "examples": []
+    },
+     {
+        "networkName": "germany50",
+        "nodesNumber": 50,
+        "linksNumber": 88,
+        "folderPath": "data/germany50",
+        "xmlFile": "germany50.xml",
+        "jsonFile": "germany50.json",
+        "htmlFile": "germany50.html",
+        "others": [
+            {
+                "versionName": "Used in ~20%",
+                "jsonFile": "germany50_20.json",
+                "xmlFile": "germany50_20.xml",
+                "htmlFile": "germany50_20.html"
+            },
+            {
+                "versionName": "Used in ~80%",
+                "jsonFile": "germany50_80.json",
+                "xmlFile": "germany50_80.xml",
+                "htmlFile": "germany50_80.html"
+            }
+        ],
+        "examples": []
     }
 ]

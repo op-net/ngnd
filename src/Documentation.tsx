@@ -1,10 +1,10 @@
 import { Box, Typography, Paper, Divider, List, ListItem, ListItemText } from "@mui/material";
-import Sidebar from "./Sidebar";
+import { InlineMath, BlockMath } from "react-katex";
+import 'katex/dist/katex.min.css';
 
 const Documentation = () => {
     return (
-        <Box sx={{ display: "flex", minHeight: "100vh" }}>
-            <Sidebar />
+        <Box sx={{ display: "flex" }}>
             <Box p={4} width={"100%"} sx={{ flexGrow: 1 }}>
                 <Typography variant="h3" component="h1" gutterBottom>
                     Documentation
@@ -190,6 +190,87 @@ const Documentation = () => {
                         allowing researchers to validate their own calculations, compare different 
                         approaches, and develop new optimization algorithms for optical network design.
                     </Typography>
+                </Paper>
+                
+                {/* Math model */}
+                <Paper elevation={2} sx={{ p: 3, mb: 4 }}>
+                    <Typography variant="h4" component="h2" gutterBottom>
+                        Mathematical Model
+                    </Typography>
+                    <Typography variant="body1" paragraph>
+                        The mathematical model used in experiments optimizing the network. 
+                        @TODO add more details.
+                        Some results are presented on the bottom of the chosen network page.
+                    </Typography>
+                    
+                    <Box sx={{ p: 3 }}>
+      <Typography variant="h6" gutterBottom>
+        Sets:
+      </Typography>
+      <ul>
+        <li><InlineMath math="T" /> - set of all transponders</li>
+        <li><InlineMath math="S" /> - set of all frequency slices</li>
+        <li><InlineMath math="E" /> - set of all edges</li>
+        <li><InlineMath math="C" /> - set of all non-repeatable pairs of edges</li>
+        <li><InlineMath math="P" /> - set of all paths</li>
+        <li><InlineMath math="S_t" /> - set of all frequency slices that could be used as a starting slice for transponder <InlineMath math="t \in T" /></li>
+      </ul>
+
+      <Typography variant="h6" gutterBottom>
+        Constants:
+      </Typography>
+      <ul>
+        <li><InlineMath math="v(t)" /> - bitrate provided by transponder <InlineMath math="t \in T" /></li>
+        <li><InlineMath math="l(p, e)" /> - 1 if edge <InlineMath math="e \in E" /> is in path <InlineMath math="p \in P" />, 0 otherwise</li>
+        <li><InlineMath math="u(t, s, s')" /> - 1 if installed transponder with starting slice <InlineMath math="s \in S_t" /> also uses <InlineMath math="s' \in S_t" />, 0 otherwise</li>
+        <li><InlineMath math="a(e)" /> - cost of amplifiers on edge <InlineMath math="e \in E" /></li>
+        <li><InlineMath math="O(e)" /> - total OSNR value on edge <InlineMath math="e \in E" /></li>
+        <li><InlineMath math="n(e, s)" /> - 1 if slice <InlineMath math="s \in S" /> is already used on edge <InlineMath math="e \in E" />, 0 otherwise</li>
+        <li><InlineMath math="d" /> - data transmission demand</li>
+        <li><InlineMath math="\phi, \delta" /> - weights in the objective function</li>
+        <li><InlineMath math="\xi(t)" /> - cost of transponder <InlineMath math="t \in T" /></li>
+      </ul>
+
+      <Typography variant="h6" gutterBottom>
+        Variables:
+      </Typography>
+      <ul>
+        <li><InlineMath math="y_{es}" /> - 1 if slice <InlineMath math="s \in S" /> is used on edge <InlineMath math="e \in E" />, 0 otherwise</li>
+        <li><InlineMath math="x_{pts}" /> - 1 if slice <InlineMath math="s \in S" /> is used as starting slice by transponder <InlineMath math="t \in T" /> on path <InlineMath math="p \in P" />, 0 otherwise</li>
+      </ul>
+
+      <Typography variant="h6" gutterBottom>
+        Objective Function:
+      </Typography>
+        <BlockMath
+        math={`\\min \\sum_{e \\in E} \\sum_{s \\in S} y_{es} 
+                + \\phi \\Big(\\sum_{(i, j) \\in C} \\Big|\\sum_{s \\in S} y_{is} - \\sum_{s \\in S} y_{js}\\Big|\\Big) 
+                + \\sum_{p \\in P} \\sum_{t \\in T} \\sum_{s \\in S} x_{pts} 
+                \\Big[\\xi(t) + \\delta \\cdot \\Big(\\sum_{e \\in E} (a(e) - O(e)) \\cdot l(p, e)\\Big) \\Big]`}
+        />
+
+      <Typography variant="body1" gutterBottom>
+        The objective function consists of three parts:
+      </Typography>
+      <ol>
+        <li>Minimize used slices on all edges.</li>
+        <li>Minimize differences between slices used on each pair of edges (load-balancing).</li>
+        <li>Minimize cost of transponders and amplifier usage, while maximizing OSNR.</li>
+      </ol>
+
+      <Typography variant="h6" gutterBottom>
+        Constraints:
+      </Typography>
+      <BlockMath math={String.raw`\sum_{p \in P} \sum_{t \in T} \sum_{s \in S_t} x_{pts} \cdot v(t) \geq d`} />
+      <Typography variant="body2" gutterBottom>
+        Ensures the demand is satisfied.
+      </Typography>
+
+      <BlockMath math={String.raw`\sum_{p \in P} \sum_{t \in T} \sum_{s \in S_t} u(t, s, s') \cdot x_{pts} \cdot l(p, e) + n(e, s') = y_{es'} \quad \forall e \in E, \forall s' \in S`} />
+      <Typography variant="body2">
+        Ensures each slice is used at most once—by a new transponder, an existing one, or not at all.
+      </Typography>
+    </Box>
                 </Paper>
 
                 <Divider sx={{ my: 4 }} />
