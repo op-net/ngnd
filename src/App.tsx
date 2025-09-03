@@ -1,25 +1,26 @@
-import React from 'react';
-import logo from './logo.svg';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import './App.css';
+import HomePage from './Homepage';
+import Networks from './Networks/Networks';
+import Documentation from './Documentation';
+import Contributors from './Contributors';
+import PrivacyPolicy from './PrivacyPolicy';
+import {homepage_url, networks_url, documentation_url, contributors_url, privacy_policy_url} from "./constants";
+import { NetworkProvider } from './Networks/NetworkContext';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <NetworkProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path={homepage_url} element={<HomePage />} />
+          <Route path={networks_url} element={<Networks />} />
+          <Route path={documentation_url} element={<Documentation />} />
+          <Route path={contributors_url} element={<Contributors />} />
+          <Route path={privacy_policy_url} element={<PrivacyPolicy />} />
+        </Routes>
+      </BrowserRouter>
+    </NetworkProvider>
   );
 }
 

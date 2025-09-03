@@ -1,0 +1,29 @@
+[
+    {
+        "networkName": "polska",
+        "nodesNumber": 12,
+        "linksNumber": 18,
+        "folderPath": "data/polska",
+        "xmlFile": "polska.xml",
+        "jsonFile": "polska.json",
+        "htmlFile": "polska.html",
+        "others": [
+            {
+                "versionName": "used in",
+                "jsonFile": "polska.json",
+                "xmlFile": "polska.xml"
+            },
+            {
+                "versionName": "used in 2",
+                "jsonFile": "polska.json",
+                "xmlFile": "polska.xml"
+            }
+        ],
+        "examples": [
+            {
+                "description": "Example 1",
+                "pngFile": "polska_ampl.png"
+            }
+        ]
+    }
+]
