@@ -1,0 +1,8126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Network Visualization</title>
+    <link
+            rel="stylesheet"
+            href="https://unpkg.com/leaflet/dist/leaflet.css"
+    />
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #map {
+            height: 100%;
+            width: 80%;
+        }
+
+        .info-box {
+            background: white;
+            height: 120px;
+            border: 3px solid;
+            box-sizing: border-box;
+            padding: 8px;
+            border-color: #47a243;
+        }
+
+        .table-box {
+            overflow-x: auto;
+            margin-top: 5px;
+        }
+
+        .up-div {
+            width: 100%;
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .channels {
+            height: 100%;
+            width: 20%;
+            overflow: auto;
+        }
+
+        .channels h2 {
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            padding-left: 40px;
+        }
+
+        .channels input {
+            margin-left: 40px;
+        }
+
+        .channels ul {
+            width: fit-content;
+            position: relative;
+        }
+
+        .channels ul li {
+            position: relative;
+            left: 0;
+            list-style: none;
+            margin: 4px 0;
+            border-left: 2px solid #217c20;
+            transition: 0.5s;
+        }
+
+        .channels ul li button {
+            background: none;
+            border: none;
+            padding: 0;
+            font: inherit;
+            cursor: pointer;
+        }
+
+        .channels ul li button {
+            position: relative;
+            padding: 4px;
+            display: inline-block;
+            z-index: 1;
+            transition: 0.5s;
+        }
+
+        .channels ul li:hover button {
+            color: #fff;
+        }
+
+        .channels ul li:before {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: #217c20;
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: 0.5s;
+        }
+
+        .channels ul li:hover:before {
+            transform: scaleX(1);
+        }
+
+
+        table,
+        th,
+        td {
+            font-weight: normal;
+            text-align: center;
+            width: fit-content;
+            white-space: nowrap;
+            border: 1px solid #c2dcb6;
+            border-collapse: collapse;
+        }
+
+        td {
+            padding: 3px;
+            background-color: #d9eec5;
+        }
+    </style>
+</head>
+<body>
+<div class="up-div">
+    <div id="map"></div>
+    <div id="channels" class="channels"></div>
+</div>
+<div class="info-box" id="info-box">Click on a link for details.</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+    const NODES = [
+    {
+        "id": "Vancouver",
+        "lat": 49.22,
+        "lng": -123.1
+    },
+    {
+        "id": "LosAngeles",
+        "lat": 33.93,
+        "lng": -118.4
+    },
+    {
+        "id": "SanFrancisco",
+        "lat": 37.62,
+        "lng": -122.38
+    },
+    {
+        "id": "LasVegas",
+        "lat": 36.08,
+        "lng": -115.17
+    },
+    {
+        "id": "SaltLakeCity",
+        "lat": 40.78,
+        "lng": -111.97
+    },
+    {
+        "id": "ElPaso",
+        "lat": 31.8,
+        "lng": -106.4
+    },
+    {
+        "id": "Dallas",
+        "lat": 32.85,
+        "lng": -96.85
+    },
+    {
+        "id": "Houston",
+        "lat": 29.97,
+        "lng": -95.35
+    },
+    {
+        "id": "OklahomaCity",
+        "lat": 36.2,
+        "lng": -95.9
+    },
+    {
+        "id": "Minneapolis",
+        "lat": 45.07,
+        "lng": -93.38
+    },
+    {
+        "id": "KansasCity",
+        "lat": 39.32,
+        "lng": -94.72
+    },
+    {
+        "id": "Denver",
+        "lat": 39.75,
+        "lng": -104.87
+    },
+    {
+        "id": "Chicago",
+        "lat": 41.98,
+        "lng": -87.9
+    },
+    {
+        "id": "Indianapolis",
+        "lat": 39.65,
+        "lng": -86.27
+    },
+    {
+        "id": "Detroit",
+        "lat": 42.42,
+        "lng": -83.02
+    },
+    {
+        "id": "StLouis",
+        "lat": 38.75,
+        "lng": -90.37
+    },
+    {
+        "id": "Nashville",
+        "lat": 36.12,
+        "lng": -86.68
+    },
+    {
+        "id": "Cleveland",
+        "lat": 41.52,
+        "lng": -81.68
+    },
+    {
+        "id": "NewYork",
+        "lat": 40.65,
+        "lng": -73.78
+    },
+    {
+        "id": "Montreal",
+        "lat": 45.5,
+        "lng": -73.6
+    },
+    {
+        "id": "Charlotte",
+        "lat": 35.22,
+        "lng": -80.93
+    },
+    {
+        "id": "NewOrleans",
+        "lat": 29.83,
+        "lng": -90.02
+    },
+    {
+        "id": "Boston",
+        "lat": 42.37,
+        "lng": -71.03
+    },
+    {
+        "id": "Atlanta",
+        "lat": 33.65,
+        "lng": -84.42
+    },
+    {
+        "id": "Miami",
+        "lat": 25.82,
+        "lng": -80.28
+    },
+    {
+        "id": "WashingtonDC",
+        "lat": 38.85,
+        "lng": -77.04
+    },
+    {
+        "id": "Philadelphia",
+        "lat": 40.0,
+        "lng": -75.13
+    },
+    {
+        "id": "Toronto",
+        "lat": 43.7,
+        "lng": -79.41
+    },
+    {
+        "id": "Pittsburgh",
+        "lat": 40.44,
+        "lng": -79.97
+    },
+    {
+        "id": "Cincinnati",
+        "lat": 39.14,
+        "lng": -84.5
+    },
+    {
+        "id": "Tampa",
+        "lat": 27.96,
+        "lng": -82.48
+    },
+    {
+        "id": "Memphis",
+        "lat": 35.11,
+        "lng": -90.0
+    },
+    {
+        "id": "Winnipeg",
+        "lat": 49.88,
+        "lng": -97.16
+    },
+    {
+        "id": "Calgary",
+        "lat": 51.08,
+        "lng": -114.08
+    },
+    {
+        "id": "Seattle",
+        "lat": 47.45,
+        "lng": -122.3
+    },
+    {
+        "id": "Portland",
+        "lat": 45.53,
+        "lng": -122.65
+    },
+    {
+        "id": "Sacrameto",
+        "lat": 38.56,
+        "lng": -121.46
+    },
+    {
+        "id": "Phoenix",
+        "lat": 33.43,
+        "lng": -112.02
+    },
+    {
+        "id": "SanDiego",
+        "lat": 32.81,
+        "lng": -117.13
+    }
+];
+    const AMPLIFIERS = [
+    {
+        "name": "Lawrence",
+        "lat": 38.960213,
+        "lng": -95.27739,
+        "OSNR": 34.68,
+        "distance": 68.87
+    },
+    {
+        "name": "Evergreen",
+        "lat": 31.4239,
+        "lng": -86.964,
+        "OSNR": 30.39,
+        "distance": 78.17
+    },
+    {
+        "name": "Montreal",
+        "lat": 45.513,
+        "lng": -73.5919,
+        "OSNR": 32.04,
+        "distance": 70.4
+    },
+    {
+        "name": "Hillsdale",
+        "lat": 41.9135,
+        "lng": -84.6312,
+        "OSNR": 31.51,
+        "distance": 72.94
+    },
+    {
+        "name": "Willis",
+        "lat": 30.4238,
+        "lng": -95.4795,
+        "OSNR": 30.24,
+        "distance": 78.31
+    },
+    {
+        "name": "SanDiego_0",
+        "lat": 32.6888,
+        "lng": -117.0874,
+        "OSNR": 30.5,
+        "distance": 77.71
+    },
+    {
+        "name": "Denver_0",
+        "lat": 39.7249,
+        "lng": -104.9854,
+        "OSNR": 34.33,
+        "distance": 56.45
+    },
+    {
+        "name": "SpanishFork",
+        "lat": 40.1111,
+        "lng": -111.6534,
+        "OSNR": 31.0,
+        "distance": 75.35
+    },
+    {
+        "name": "Parkbeg",
+        "lat": 50.4559,
+        "lng": -106.2731,
+        "OSNR": 33.21,
+        "distance": 64.51
+    },
+    {
+        "name": "StLouis",
+        "lat": 38.6372,
+        "lng": -90.1578,
+        "OSNR": 31.52,
+        "distance": 72.9
+    },
+    {
+        "name": "Woodstock",
+        "lat": 43.1235,
+        "lng": -80.7515,
+        "OSNR": 32.28,
+        "distance": 69.21
+    },
+    {
+        "name": "Bellingham",
+        "lat": 48.7471,
+        "lng": -122.4409,
+        "OSNR": 30.74,
+        "distance": 76.64
+    },
+    {
+        "name": "Balmorhea",
+        "lat": 30.9753,
+        "lng": -103.7413,
+        "OSNR": 33.6,
+        "distance": 62.45
+    },
+    {
+        "name": "Houston",
+        "lat": 29.76328,
+        "lng": -95.36327,
+        "OSNR": 36.16,
+        "distance": 57.27
+    },
+    {
+        "name": "AllisonRanch",
+        "lat": 30.663,
+        "lng": -100.9122,
+        "OSNR": 31.11,
+        "distance": 74.83
+    },
+    {
+        "name": "Fillmore",
+        "lat": 38.9625,
+        "lng": -112.3248,
+        "OSNR": 30.17,
+        "distance": 79.15
+    },
+    {
+        "name": "Toponas",
+        "lat": 40.0586,
+        "lng": -106.8084,
+        "OSNR": 33.9,
+        "distance": 60.78
+    },
+    {
+        "name": "Bliss",
+        "lat": 42.9283,
+        "lng": -114.9458,
+        "OSNR": 30.06,
+        "distance": 79.66
+    },
+    {
+        "name": "Walsh",
+        "lat": 49.9466,
+        "lng": -110.0459,
+        "OSNR": 32.79,
+        "distance": 66.66
+    },
+    {
+        "name": "NewBoston",
+        "lat": 33.4563,
+        "lng": -94.417,
+        "OSNR": 30.55,
+        "distance": 79.78
+    },
+    {
+        "name": "Chatham",
+        "lat": 42.3651,
+        "lng": -82.1886,
+        "OSNR": 32.97,
+        "distance": 65.73
+    },
+    {
+        "name": "Strathmore",
+        "lat": 51.0362,
+        "lng": -113.3967,
+        "OSNR": 31.68,
+        "distance": 72.16
+    },
+    {
+        "name": "Canmore",
+        "lat": 51.0871,
+        "lng": -115.3462,
+        "OSNR": 32.34,
+        "distance": 68.93
+    },
+    {
+        "name": "Perdido",
+        "lat": 31.0067,
+        "lng": -87.6256,
+        "OSNR": 31.88,
+        "distance": 71.19
+    },
+    {
+        "name": "MartinBluff",
+        "lat": 30.4549,
+        "lng": -88.6374,
+        "OSNR": 30.23,
+        "distance": 78.88
+    },
+    {
+        "name": "TonopahJunction",
+        "lat": 38.2622,
+        "lng": -118.096,
+        "OSNR": 30.26,
+        "distance": 78.74
+    },
+    {
+        "name": "Granby_0",
+        "lat": 40.0744,
+        "lng": -105.9338,
+        "OSNR": 31.2,
+        "distance": 74.44
+    },
+    {
+        "name": "Rensselaer",
+        "lat": 40.9218,
+        "lng": -87.146,
+        "OSNR": 32.36,
+        "distance": 68.82
+    },
+    {
+        "name": "Lingard",
+        "lat": 37.2405,
+        "lng": -120.3959,
+        "OSNR": 30.74,
+        "distance": 76.65
+    },
+    {
+        "name": "Ardick",
+        "lat": 31.4597,
+        "lng": -81.4317,
+        "OSNR": 31.72,
+        "distance": 71.95
+    },
+    {
+        "name": "Calgary_0_1",
+        "lat": 51.0707,
+        "lng": -114.0588,
+        "OSNR": 36.68,
+        "distance": 39.47
+    },
+    {
+        "name": "Fairfield_0_1",
+        "lat": 47.607,
+        "lng": -111.9783,
+        "OSNR": 30.06,
+        "distance": 79.73
+    },
+    {
+        "name": "Cincinnati_0",
+        "lat": 39.0964,
+        "lng": -84.5071,
+        "OSNR": 35.49,
+        "distance": 54.19
+    },
+    {
+        "name": "SalmonArm",
+        "lat": 50.686,
+        "lng": -119.2392,
+        "OSNR": 31.29,
+        "distance": 73.99
+    },
+    {
+        "name": "Cordele",
+        "lat": 31.9656,
+        "lng": -83.7797,
+        "OSNR": 30.17,
+        "distance": 74.54
+    },
+    {
+        "name": "SaukCentre",
+        "lat": 45.7335,
+        "lng": -94.9514,
+        "OSNR": 33.8,
+        "distance": 63.86
+    },
+    {
+        "name": "Herbert",
+        "lat": 50.4208,
+        "lng": -107.2197,
+        "OSNR": 32.7,
+        "distance": 67.15
+    },
+    {
+        "name": "Maysville",
+        "lat": 34.87,
+        "lng": -97.37111,
+        "OSNR": 32.24,
+        "distance": 73.0
+    },
+    {
+        "name": "Whitewood",
+        "lat": 50.3209,
+        "lng": -102.2717,
+        "OSNR": 31.56,
+        "distance": 72.71
+    },
+    {
+        "name": "Altamont_0",
+        "lat": 40.356,
+        "lng": -110.2836,
+        "OSNR": 32.28,
+        "distance": 69.25
+    },
+    {
+        "name": "QuinteWest",
+        "lat": 44.1094,
+        "lng": -77.5538,
+        "OSNR": 30.17,
+        "distance": 79.15
+    },
+    {
+        "name": "AndersonJunction",
+        "lat": 37.2833,
+        "lng": -113.3047,
+        "OSNR": 30.16,
+        "distance": 79.19
+    },
+    {
+        "name": "MapleHill",
+        "lat": 39.08556,
+        "lng": -96.02806,
+        "OSNR": 30.61,
+        "distance": 70.06
+    },
+    {
+        "name": "Portland",
+        "lat": 45.5123,
+        "lng": -122.6799,
+        "OSNR": 32.02,
+        "distance": 70.48
+    },
+    {
+        "name": "Wilson",
+        "lat": 38.82528,
+        "lng": -98.475,
+        "OSNR": 30.99,
+        "distance": 74.66
+    },
+    {
+        "name": "Carlisle",
+        "lat": 34.7831469,
+        "lng": -91.7465235,
+        "OSNR": 36.58,
+        "distance": 79.5
+    },
+    {
+        "name": "Danbury",
+        "lat": 43.5206,
+        "lng": -71.8662,
+        "OSNR": 32.31,
+        "distance": 69.07
+    },
+    {
+        "name": "Winnipeg",
+        "lat": 49.9017,
+        "lng": -97.137,
+        "OSNR": 36.2,
+        "distance": 37.38
+    },
+    {
+        "name": "Woodin",
+        "lat": 45.8115,
+        "lng": -112.7077,
+        "OSNR": 32.14,
+        "distance": 67.63
+    },
+    {
+        "name": "ElHongo",
+        "lat": 32.5122,
+        "lng": -116.2848,
+        "OSNR": 31.63,
+        "distance": 64.79
+    },
+    {
+        "name": "Dover",
+        "lat": 40.8766,
+        "lng": -74.5648,
+        "OSNR": 33.13,
+        "distance": 64.93
+    },
+    {
+        "name": "Reynolds",
+        "lat": 47.671,
+        "lng": -97.1052,
+        "OSNR": 31.24,
+        "distance": 75.95
+    },
+    {
+        "name": "Martinsville",
+        "lat": 39.3312,
+        "lng": -87.8879,
+        "OSNR": 31.92,
+        "distance": 71.74
+    },
+    {
+        "name": "Revelstoke",
+        "lat": 50.9904,
+        "lng": -118.2248,
+        "OSNR": 30.24,
+        "distance": 78.86
+    },
+    {
+        "name": "Greenville_0_1",
+        "lat": 34.8344,
+        "lng": -82.2948,
+        "OSNR": 31.66,
+        "distance": 72.22
+    },
+    {
+        "name": "Rangely",
+        "lat": 40.0929,
+        "lng": -108.8007,
+        "OSNR": 31.46,
+        "distance": 73.21
+    },
+    {
+        "name": "Reidsville",
+        "lat": 36.3526,
+        "lng": -79.667,
+        "OSNR": 30.12,
+        "distance": 79.4
+    },
+    {
+        "name": "Durkee",
+        "lat": 44.5848,
+        "lng": -117.463,
+        "OSNR": 31.35,
+        "distance": 73.72
+    },
+    {
+        "name": "FortMcKavett",
+        "lat": 30.827,
+        "lng": -100.106,
+        "OSNR": 30.17,
+        "distance": 79.18
+    },
+    {
+        "name": "OakRidge",
+        "lat": 35.9957,
+        "lng": -84.2723,
+        "OSNR": 31.47,
+        "distance": 73.15
+    },
+    {
+        "name": "Seattle",
+        "lat": 47.6154,
+        "lng": -122.3157,
+        "OSNR": 33.35,
+        "distance": 63.79
+    },
+    {
+        "name": "Progreso",
+        "lat": 32.5804,
+        "lng": -115.5984,
+        "OSNR": 35.85,
+        "distance": 47.29
+    },
+    {
+        "name": "BeaverFallas",
+        "lat": 40.7451,
+        "lng": -80.315,
+        "OSNR": 36.12,
+        "distance": 46.82
+    },
+    {
+        "name": "Hebron",
+        "lat": 41.3221,
+        "lng": -87.198,
+        "OSNR": 32.3,
+        "distance": 69.15
+    },
+    {
+        "name": "Willington",
+        "lat": 41.8654,
+        "lng": -72.2635,
+        "OSNR": 31.2,
+        "distance": 74.38
+    },
+    {
+        "name": "Lancaster",
+        "lat": 34.6895,
+        "lng": -118.1473,
+        "OSNR": 31.9,
+        "distance": 71.41
+    },
+    {
+        "name": "Fairfield",
+        "lat": 38.2382,
+        "lng": -122.0609,
+        "OSNR": 31.45,
+        "distance": 73.24
+    },
+    {
+        "name": "Morrisburg",
+        "lat": 44.8931,
+        "lng": -75.1907,
+        "OSNR": 30.9,
+        "distance": 75.81
+    },
+    {
+        "name": "Clayton",
+        "lat": 36.4412,
+        "lng": -103.1947,
+        "OSNR": 30.87,
+        "distance": 75.03
+    },
+    {
+        "name": "Welsh",
+        "lat": 30.23604,
+        "lng": -92.82265,
+        "OSNR": 31.35,
+        "distance": 78.35
+    },
+    {
+        "name": "Rochester",
+        "lat": 43.1391,
+        "lng": -77.7266,
+        "OSNR": 30.02,
+        "distance": 79.83
+    },
+    {
+        "name": "Modesto",
+        "lat": 37.6756,
+        "lng": -121.0364,
+        "OSNR": 31.2,
+        "distance": 74.41
+    },
+    {
+        "name": "SanBernardino",
+        "lat": 34.105,
+        "lng": -117.3768,
+        "OSNR": 30.2,
+        "distance": 79.05
+    },
+    {
+        "name": "Hallstead",
+        "lat": 41.96,
+        "lng": -75.7439,
+        "OSNR": 31.23,
+        "distance": 74.26
+    },
+    {
+        "name": "MarshySprings",
+        "lat": 31.5237,
+        "lng": -96.1003,
+        "OSNR": 30.84,
+        "distance": 76.04
+    },
+    {
+        "name": "Parowan",
+        "lat": 37.838,
+        "lng": -112.8574,
+        "OSNR": 30.4,
+        "distance": 78.13
+    },
+    {
+        "name": "MountainHome",
+        "lat": 43.133,
+        "lng": -115.6932,
+        "OSNR": 33.14,
+        "distance": 64.88
+    },
+    {
+        "name": "Arcadia",
+        "lat": 44.2451,
+        "lng": -91.5039,
+        "OSNR": 30.08,
+        "distance": 79.57
+    },
+    {
+        "name": "Miami",
+        "lat": 25.8434,
+        "lng": -80.2101,
+        "OSNR": 30.93,
+        "distance": 75.7
+    },
+    {
+        "name": "Blackfoot",
+        "lat": 43.185,
+        "lng": -112.3519,
+        "OSNR": 33.07,
+        "distance": 61.43
+    },
+    {
+        "name": "Springfield",
+        "lat": 39.9171,
+        "lng": -83.8148,
+        "OSNR": 32.29,
+        "distance": 70.13
+    },
+    {
+        "name": "Gretna",
+        "lat": 36.9501,
+        "lng": -79.3604,
+        "OSNR": 31.74,
+        "distance": 71.85
+    },
+    {
+        "name": "Batesville",
+        "lat": 34.3114982,
+        "lng": -89.9442567,
+        "OSNR": 30.84,
+        "distance": 78.61
+    },
+    {
+        "name": "Dunphy",
+        "lat": 40.7079,
+        "lng": -116.5294,
+        "OSNR": 31.59,
+        "distance": 72.56
+    },
+    {
+        "name": "KansasCity_0",
+        "lat": 39.0586,
+        "lng": -94.474,
+        "OSNR": 30.18,
+        "distance": 79.12
+    },
+    {
+        "name": "GrandRidge",
+        "lat": 30.7111,
+        "lng": -85.0167,
+        "OSNR": 30.77,
+        "distance": 76.42
+    },
+    {
+        "name": "CactusSprings",
+        "lat": 36.5763,
+        "lng": -115.7273,
+        "OSNR": 30.57,
+        "distance": 77.36
+    },
+    {
+        "name": "Tampa_0",
+        "lat": 27.9496,
+        "lng": -82.4551,
+        "OSNR": 36.05,
+        "distance": 50.6
+    },
+    {
+        "name": "Hawthorne",
+        "lat": 38.5213,
+        "lng": -118.6222,
+        "OSNR": 32.36,
+        "distance": 68.85
+    },
+    {
+        "name": "Princeton",
+        "lat": 49.4591,
+        "lng": -120.5086,
+        "OSNR": 32.49,
+        "distance": 68.16
+    },
+    {
+        "name": "LakeHavasuCity",
+        "lat": 34.4751,
+        "lng": -114.328,
+        "OSNR": 30.47,
+        "distance": 77.8
+    },
+    {
+        "name": "Moreland",
+        "lat": 33.2857,
+        "lng": -84.7671,
+        "OSNR": 30.46,
+        "distance": 77.83
+    },
+    {
+        "name": "Leachville",
+        "lat": 35.9379,
+        "lng": -90.2608,
+        "OSNR": 29.99,
+        "distance": 79.98
+    },
+    {
+        "name": "Algonquin",
+        "lat": 42.1634,
+        "lng": -88.2907,
+        "OSNR": 31.78,
+        "distance": 71.68
+    },
+    {
+        "name": "Malta",
+        "lat": 42.2986,
+        "lng": -113.368,
+        "OSNR": 30.83,
+        "distance": 76.14
+    },
+    {
+        "name": "Lexington",
+        "lat": 35.6375,
+        "lng": -88.3851,
+        "OSNR": 30.24,
+        "distance": 78.84
+    },
+    {
+        "name": "Greensburg",
+        "lat": 39.3257,
+        "lng": -85.4792,
+        "OSNR": 31.31,
+        "distance": 73.91
+    },
+    {
+        "name": "Kirkella",
+        "lat": 50.0166,
+        "lng": -101.3682,
+        "OSNR": 30.08,
+        "distance": 79.57
+    },
+    {
+        "name": "ChimneyLakes",
+        "lat": 30.1959,
+        "lng": -81.7987,
+        "OSNR": 32.62,
+        "distance": 67.53
+    },
+    {
+        "name": "Scotia",
+        "lat": 32.679,
+        "lng": -81.2418,
+        "OSNR": 31.69,
+        "distance": 72.1
+    },
+    {
+        "name": "Yoncalla",
+        "lat": 43.5845,
+        "lng": -123.2806,
+        "OSNR": 31.13,
+        "distance": 74.76
+    },
+    {
+        "name": "Fresno",
+        "lat": 36.7488,
+        "lng": -119.7909,
+        "OSNR": 33.16,
+        "distance": 65.34
+    },
+    {
+        "name": "SaltLakeCity",
+        "lat": 40.7263,
+        "lng": -111.9,
+        "OSNR": 30.09,
+        "distance": 79.53
+    },
+    {
+        "name": "Denver",
+        "lat": 39.7827,
+        "lng": -105.1077,
+        "OSNR": 30.52,
+        "distance": 77.55
+    },
+    {
+        "name": "Boston",
+        "lat": 42.3351,
+        "lng": -71.0987,
+        "OSNR": 34.22,
+        "distance": 58.95
+    },
+    {
+        "name": "Lordsburg",
+        "lat": 32.3594,
+        "lng": -108.7231,
+        "OSNR": 35.77,
+        "distance": 49.36
+    },
+    {
+        "name": "KansasCity",
+        "lat": 39.09972,
+        "lng": -94.57833,
+        "OSNR": 35.82,
+        "distance": 52.45
+    },
+    {
+        "name": "SaintCloud",
+        "lat": 45.551,
+        "lng": -93.4458,
+        "OSNR": 30.2,
+        "distance": 78.43
+    },
+    {
+        "name": "Allamuchy",
+        "lat": 40.9188,
+        "lng": -74.8032,
+        "OSNR": 31.95,
+        "distance": 70.84
+    },
+    {
+        "name": "Dillon",
+        "lat": 45.2052,
+        "lng": -112.6404,
+        "OSNR": 30.15,
+        "distance": 78.09
+    },
+    {
+        "name": "Worcester",
+        "lat": 42.259,
+        "lng": -71.808,
+        "OSNR": 34.44,
+        "distance": 57.7
+    },
+    {
+        "name": "Yale",
+        "lat": 49.5608,
+        "lng": -121.4396,
+        "OSNR": 32.0,
+        "distance": 70.59
+    },
+    {
+        "name": "Kirkland",
+        "lat": 34.3769,
+        "lng": -100.0614,
+        "OSNR": 31.16,
+        "distance": 74.8
+    },
+    {
+        "name": "Jean",
+        "lat": 35.7749,
+        "lng": -115.3263,
+        "OSNR": 32.54,
+        "distance": 67.91
+    },
+    {
+        "name": "Archbold",
+        "lat": 27.1805,
+        "lng": -81.3507,
+        "OSNR": 31.08,
+        "distance": 74.98
+    },
+    {
+        "name": "SaltLick",
+        "lat": 35.9256,
+        "lng": -87.5492,
+        "OSNR": 31.33,
+        "distance": 73.79
+    },
+    {
+        "name": "Manderfield",
+        "lat": 38.3589,
+        "lng": -112.6386,
+        "OSNR": 32.47,
+        "distance": 68.3
+    },
+    {
+        "name": "GreatFalls",
+        "lat": 34.571,
+        "lng": -80.9007,
+        "OSNR": 31.47,
+        "distance": 73.14
+    },
+    {
+        "name": "Manteno",
+        "lat": 41.2458,
+        "lng": -87.8367,
+        "OSNR": 32.28,
+        "distance": 69.21
+    },
+    {
+        "name": "Hayden",
+        "lat": 40.4847,
+        "lng": -107.2571,
+        "OSNR": 31.16,
+        "distance": 74.6
+    },
+    {
+        "name": "Dayton",
+        "lat": 30.0466051,
+        "lng": -94.8852026,
+        "OSNR": 34.37,
+        "distance": 64.47
+    },
+    {
+        "name": "Carberry",
+        "lat": 49.8703,
+        "lng": -99.3298,
+        "OSNR": 30.11,
+        "distance": 79.45
+    },
+    {
+        "name": "Coventry",
+        "lat": 44.8529,
+        "lng": -72.2596,
+        "OSNR": 32.46,
+        "distance": 79.64
+    },
+    {
+        "name": "Bassano",
+        "lat": 50.7851,
+        "lng": -112.4477,
+        "OSNR": 32.72,
+        "distance": 67.04
+    },
+    {
+        "name": "Oceanside",
+        "lat": 33.1975,
+        "lng": -117.3631,
+        "OSNR": 35.22,
+        "distance": 53.03
+    },
+    {
+        "name": "Molino",
+        "lat": 30.7188,
+        "lng": -87.3146,
+        "OSNR": 31.78,
+        "distance": 71.67
+    },
+    {
+        "name": "Meridian",
+        "lat": 43.5973,
+        "lng": -116.3947,
+        "OSNR": 30.71,
+        "distance": 76.68
+    },
+    {
+        "name": "Clintonville",
+        "lat": 41.1921,
+        "lng": -79.875,
+        "OSNR": 30.15,
+        "distance": 79.26
+    },
+    {
+        "name": "Conquest",
+        "lat": 43.115,
+        "lng": -76.6433,
+        "OSNR": 32.25,
+        "distance": 69.36
+    },
+    {
+        "name": "Willard",
+        "lat": 41.4025,
+        "lng": -112.0332,
+        "OSNR": 31.21,
+        "distance": 74.35
+    },
+    {
+        "name": "St.Catharines",
+        "lat": 43.1491,
+        "lng": -79.232,
+        "OSNR": 31.72,
+        "distance": 71.96
+    },
+    {
+        "name": "Arlinton",
+        "lat": 45.7043,
+        "lng": -120.2069,
+        "OSNR": 30.42,
+        "distance": 78.05
+    },
+    {
+        "name": "Franconia",
+        "lat": 44.2258,
+        "lng": -71.7484,
+        "OSNR": 30.74,
+        "distance": 78.98
+    },
+    {
+        "name": "DeerTrail",
+        "lat": 39.615892,
+        "lng": -104.043007,
+        "OSNR": 30.21,
+        "distance": 77.6
+    },
+    {
+        "name": "Memphis",
+        "lat": 35.14953,
+        "lng": -90.04898,
+        "OSNR": 30.82,
+        "distance": 78.69
+    },
+    {
+        "name": "Woodland",
+        "lat": 45.9074,
+        "lng": -122.7366,
+        "OSNR": 33.4,
+        "distance": 59.3
+    },
+    {
+        "name": "Putnam",
+        "lat": 32.3615,
+        "lng": -99.1946,
+        "OSNR": 30.4,
+        "distance": 78.13
+    },
+    {
+        "name": "CascadeLocks",
+        "lat": 45.6678,
+        "lng": -121.8823,
+        "OSNR": 34.67,
+        "distance": 56.42
+    },
+    {
+        "name": "Monticello",
+        "lat": 40.0276,
+        "lng": -88.5631,
+        "OSNR": 30.84,
+        "distance": 76.09
+    },
+    {
+        "name": "Cortland",
+        "lat": 42.5955,
+        "lng": -76.1724,
+        "OSNR": 30.21,
+        "distance": 78.98
+    },
+    {
+        "name": "Harrisburg",
+        "lat": 44.2717,
+        "lng": -123.1665,
+        "OSNR": 30.65,
+        "distance": 76.96
+    },
+    {
+        "name": "Sieben",
+        "lat": 46.897,
+        "lng": -112.1261,
+        "OSNR": 31.35,
+        "distance": 73.57
+    },
+    {
+        "name": "Reedsburg",
+        "lat": 43.5226,
+        "lng": -90.0015,
+        "OSNR": 31.4,
+        "distance": 73.48
+    },
+    {
+        "name": "MoapaValley",
+        "lat": 36.5846,
+        "lng": -114.4568,
+        "OSNR": 30.85,
+        "distance": 76.06
+    },
+    {
+        "name": "Vernon",
+        "lat": 34.1574,
+        "lng": -99.292,
+        "OSNR": 30.82,
+        "distance": 77.34
+    },
+    {
+        "name": "Tucson",
+        "lat": 32.0628,
+        "lng": -110.7758,
+        "OSNR": 32.21,
+        "distance": 69.59
+    },
+    {
+        "name": "Concordia",
+        "lat": 38.9818,
+        "lng": -93.5635,
+        "OSNR": 32.02,
+        "distance": 70.52
+    },
+    {
+        "name": "Hardinsburg",
+        "lat": 38.46,
+        "lng": -86.2697,
+        "OSNR": 30.68,
+        "distance": 76.85
+    },
+    {
+        "name": "Warrenton",
+        "lat": 38.8011,
+        "lng": -91.1536,
+        "OSNR": 30.87,
+        "distance": 75.94
+    },
+    {
+        "name": "FortStockton",
+        "lat": 30.8941,
+        "lng": -102.9268,
+        "OSNR": 30.38,
+        "distance": 78.21
+    },
+    {
+        "name": "SpringBrook",
+        "lat": 41.2999,
+        "lng": -75.6078,
+        "OSNR": 30.07,
+        "distance": 79.63
+    },
+    {
+        "name": "Salina",
+        "lat": 38.826633,
+        "lng": -97.616257,
+        "OSNR": 30.99,
+        "distance": 70.93
+    },
+    {
+        "name": "Graham",
+        "lat": 47.0365,
+        "lng": -122.2847,
+        "OSNR": 32.16,
+        "distance": 68.5
+    },
+    {
+        "name": "Ellinger",
+        "lat": 29.8376,
+        "lng": -96.7059,
+        "OSNR": 33.04,
+        "distance": 65.41
+    },
+    {
+        "name": "Redcliff",
+        "lat": 50.0877,
+        "lng": -110.8007,
+        "OSNR": 34.71,
+        "distance": 56.17
+    },
+    {
+        "name": "Murfreesboro",
+        "lat": 35.846111,
+        "lng": -86.391945,
+        "OSNR": 32.46,
+        "distance": 68.31
+    },
+    {
+        "name": "Goodland",
+        "lat": 39.356602,
+        "lng": -101.711082,
+        "OSNR": 33.28,
+        "distance": 62.23
+    },
+    {
+        "name": "Eurekaton",
+        "lat": 35.43278,
+        "lng": -89.21917,
+        "OSNR": 30.62,
+        "distance": 77.12
+    },
+    {
+        "name": "Meeker",
+        "lat": 40.0341,
+        "lng": -107.9084,
+        "OSNR": 30.82,
+        "distance": 76.21
+    },
+    {
+        "name": "Ardmore",
+        "lat": 34.174259,
+        "lng": -97.143623,
+        "OSNR": 32.12,
+        "distance": 73.48
+    },
+    {
+        "name": "NewBrunswick",
+        "lat": 40.473,
+        "lng": -74.4512,
+        "OSNR": 30.77,
+        "distance": 76.4
+    },
+    {
+        "name": "Manchester",
+        "lat": 42.9745,
+        "lng": -71.4599,
+        "OSNR": 30.64,
+        "distance": 76.98
+    },
+    {
+        "name": "WashingtonDC",
+        "lat": 38.8995,
+        "lng": -77.0395,
+        "OSNR": 35.61,
+        "distance": 50.45
+    },
+    {
+        "name": "GoldRun",
+        "lat": 39.1791,
+        "lng": -120.8554,
+        "OSNR": 32.49,
+        "distance": 68.17
+    },
+    {
+        "name": "RothsayMobileHomePark",
+        "lat": 46.4728,
+        "lng": -96.2793,
+        "OSNR": 30.22,
+        "distance": 78.32
+    },
+    {
+        "name": "TigerIsland",
+        "lat": 28.4083,
+        "lng": -81.705,
+        "OSNR": 30.19,
+        "distance": 79.09
+    },
+    {
+        "name": "Meacham",
+        "lat": 45.5039,
+        "lng": -118.4223,
+        "OSNR": 32.94,
+        "distance": 65.91
+    },
+    {
+        "name": "Gordon",
+        "lat": 32.5284,
+        "lng": -98.3732,
+        "OSNR": 30.15,
+        "distance": 79.27
+    },
+    {
+        "name": "Greenville_0",
+        "lat": 38.8878,
+        "lng": -89.4122,
+        "OSNR": 33.99,
+        "distance": 61.67
+    },
+    {
+        "name": "Lexington_0",
+        "lat": 35.8168,
+        "lng": -80.821,
+        "OSNR": 30.12,
+        "distance": 79.39
+    },
+    {
+        "name": "Nashville_0",
+        "lat": 36.1733,
+        "lng": -86.7616,
+        "OSNR": 33.73,
+        "distance": 61.74
+    },
+    {
+        "name": "Shorter",
+        "lat": 32.393,
+        "lng": -85.9217,
+        "OSNR": 30.81,
+        "distance": 76.25
+    },
+    {
+        "name": "Nobleford",
+        "lat": 49.8796,
+        "lng": -113.0796,
+        "OSNR": 31.27,
+        "distance": 72.5
+    },
+    {
+        "name": "Corning",
+        "lat": 39.9261,
+        "lng": -122.1775,
+        "OSNR": 30.74,
+        "distance": 76.56
+    },
+    {
+        "name": "PeleeIsland",
+        "lat": 41.746677,
+        "lng": -82.6428,
+        "OSNR": 31.54,
+        "distance": 72.83
+    },
+    {
+        "name": "Cumberland",
+        "lat": 39.6564,
+        "lng": -78.7682,
+        "OSNR": 33.87,
+        "distance": 60.97
+    },
+    {
+        "name": "Odessa_0",
+        "lat": 31.8816,
+        "lng": -102.3123,
+        "OSNR": 31.3,
+        "distance": 73.95
+    },
+    {
+        "name": "Sunburst",
+        "lat": 48.8719,
+        "lng": -111.9126,
+        "OSNR": 32.07,
+        "distance": 68.66
+    },
+    {
+        "name": "LathropWells",
+        "lat": 36.6417,
+        "lng": -116.3977,
+        "OSNR": 33.14,
+        "distance": 64.85
+    },
+    {
+        "name": "Newark",
+        "lat": 39.6754,
+        "lng": -75.7523,
+        "OSNR": 30.12,
+        "distance": 79.41
+    },
+    {
+        "name": "Tallahassee",
+        "lat": 30.4418,
+        "lng": -84.307,
+        "OSNR": 31.24,
+        "distance": 74.24
+    },
+    {
+        "name": "Visalia",
+        "lat": 36.3127,
+        "lng": -119.3008,
+        "OSNR": 30.14,
+        "distance": 79.63
+    },
+    {
+        "name": "GardnervilleRanchos",
+        "lat": 38.8935,
+        "lng": -119.7262,
+        "OSNR": 30.11,
+        "distance": 79.42
+    },
+    {
+        "name": "Medford",
+        "lat": 44.1654,
+        "lng": -93.2502,
+        "OSNR": 30.63,
+        "distance": 77.06
+    },
+    {
+        "name": "FortHancock",
+        "lat": 31.2945,
+        "lng": -105.8466,
+        "OSNR": 30.06,
+        "distance": 79.67
+    },
+    {
+        "name": "Phoenix_0",
+        "lat": 33.4176,
+        "lng": -112.3249,
+        "OSNR": 31.37,
+        "distance": 73.62
+    },
+    {
+        "name": "SaintVincent",
+        "lat": 48.9678,
+        "lng": -97.2249,
+        "OSNR": 30.09,
+        "distance": 76.65
+    },
+    {
+        "name": "SainteAgathe",
+        "lat": 49.5668,
+        "lng": -97.1824,
+        "OSNR": 32.57,
+        "distance": 66.68
+    },
+    {
+        "name": "Penticton",
+        "lat": 49.4788,
+        "lng": -119.5906,
+        "OSNR": 32.85,
+        "distance": 66.37
+    },
+    {
+        "name": "SanDiego",
+        "lat": 32.7218,
+        "lng": -117.1407,
+        "OSNR": 34.6,
+        "distance": 56.83
+    },
+    {
+        "name": "Snowville",
+        "lat": 41.9087,
+        "lng": -112.6092,
+        "OSNR": 31.31,
+        "distance": 73.88
+    },
+    {
+        "name": "Bakersfield",
+        "lat": 30.8901,
+        "lng": -102.2981,
+        "OSNR": 34.05,
+        "distance": 59.99
+    },
+    {
+        "name": "Middleport",
+        "lat": 43.2097,
+        "lng": -78.4712,
+        "OSNR": 32.34,
+        "distance": 68.94
+    },
+    {
+        "name": "BlonneTerre",
+        "lat": 37.9303,
+        "lng": -90.5548,
+        "OSNR": 30.03,
+        "distance": 79.8
+    },
+    {
+        "name": "Gridley",
+        "lat": 39.8485,
+        "lng": -121.6911,
+        "OSNR": 30.2,
+        "distance": 79.05
+    },
+    {
+        "name": "Tonopah",
+        "lat": 38.061,
+        "lng": -117.2326,
+        "OSNR": 32.46,
+        "distance": 68.34
+    },
+    {
+        "name": "Cleveland",
+        "lat": 41.49,
+        "lng": -81.797,
+        "OSNR": 30.89,
+        "distance": 75.88
+    },
+    {
+        "name": "NewDayton",
+        "lat": 49.4189,
+        "lng": -112.3669,
+        "OSNR": 31.99,
+        "distance": 69.23
+    },
+    {
+        "name": "Toledo",
+        "lat": 46.4351,
+        "lng": -122.8478,
+        "OSNR": 30.11,
+        "distance": 79.45
+    },
+    {
+        "name": "Pittsburgh",
+        "lat": 40.4427,
+        "lng": -79.9767,
+        "OSNR": 36.47,
+        "distance": 44.12
+    },
+    {
+        "name": "Parks",
+        "lat": 36.614,
+        "lng": -90.5654,
+        "OSNR": 31.13,
+        "distance": 74.73
+    },
+    {
+        "name": "Lascar",
+        "lat": 37.8237,
+        "lng": -104.7488,
+        "OSNR": 30.57,
+        "distance": 76.51
+    },
+    {
+        "name": "Rigby",
+        "lat": 43.6763,
+        "lng": -111.9095,
+        "OSNR": 32.35,
+        "distance": 65.27
+    },
+    {
+        "name": "Kingsland",
+        "lat": 30.6973,
+        "lng": -81.6931,
+        "OSNR": 30.46,
+        "distance": 77.85
+    },
+    {
+        "name": "Bowie_0",
+        "lat": 33.5436,
+        "lng": -97.85,
+        "OSNR": 33.26,
+        "distance": 65.09
+    },
+    {
+        "name": "Atlanta_0",
+        "lat": 33.7402,
+        "lng": -84.393,
+        "OSNR": 33.81,
+        "distance": 61.3
+    },
+    {
+        "name": "WeldonCrossroads",
+        "lat": 33.1938,
+        "lng": -84.0691,
+        "OSNR": 32.21,
+        "distance": 68.44
+    },
+    {
+        "name": "Dallas_0",
+        "lat": 32.7665,
+        "lng": -96.8792,
+        "OSNR": 31.7,
+        "distance": 72.05
+    },
+    {
+        "name": "Goodwin",
+        "lat": 34.9381496,
+        "lng": -91.0209529,
+        "OSNR": 33.01,
+        "distance": 69.92
+    },
+    {
+        "name": "Buckley",
+        "lat": 40.5857,
+        "lng": -88.0441,
+        "OSNR": 30.98,
+        "distance": 75.43
+    },
+    {
+        "name": "Altamont",
+        "lat": 39.0609,
+        "lng": -88.7345,
+        "OSNR": 29.36,
+        "distance": 78.9
+    },
+    {
+        "name": "Golden",
+        "lat": 51.2945,
+        "lng": -116.9777,
+        "OSNR": 26.92,
+        "distance": 93.34
+    },
+    {
+        "name": "Bethany",
+        "lat": 40.2664,
+        "lng": -94.0249,
+        "OSNR": 33.6,
+        "distance": 62.45
+    },
+    {
+        "name": "NewYork",
+        "lat": 40.7149,
+        "lng": -74.0001,
+        "OSNR": 34.63,
+        "distance": 56.63
+    },
+    {
+        "name": "Litchfield",
+        "lat": 39.1641,
+        "lng": -89.6565,
+        "OSNR": 35.05,
+        "distance": 54.06
+    },
+    {
+        "name": "Palmyra",
+        "lat": 37.8569,
+        "lng": -78.2639,
+        "OSNR": 31.19,
+        "distance": 74.48
+    },
+    {
+        "name": "Dragoon",
+        "lat": 32.0289,
+        "lng": -110.0385,
+        "OSNR": 30.06,
+        "distance": 79.67
+    },
+    {
+        "name": "Coin",
+        "lat": 40.9011,
+        "lng": -115.7059,
+        "OSNR": 30.04,
+        "distance": 79.74
+    },
+    {
+        "name": "Lafayette_0",
+        "lat": 40.3674,
+        "lng": -86.7832,
+        "OSNR": 31.23,
+        "distance": 74.26
+    },
+    {
+        "name": "Emmons",
+        "lat": 43.4947,
+        "lng": -93.492,
+        "OSNR": 31.25,
+        "distance": 74.17
+    },
+    {
+        "name": "Gainesville_0",
+        "lat": 29.6767,
+        "lng": -82.2824,
+        "OSNR": 31.25,
+        "distance": 74.2
+    },
+    {
+        "name": "JunctionCity",
+        "lat": 39.02861,
+        "lng": -96.8314,
+        "OSNR": 30.51,
+        "distance": 72.77
+    },
+    {
+        "name": "Wilna",
+        "lat": 32.2062,
+        "lng": -108.2303,
+        "OSNR": 30.73,
+        "distance": 76.61
+    },
+    {
+        "name": "Toulon",
+        "lat": 40.0644,
+        "lng": -118.6434,
+        "OSNR": 30.37,
+        "distance": 78.25
+    },
+    {
+        "name": "LidaJunction",
+        "lat": 37.5015,
+        "lng": -117.185,
+        "OSNR": 32.77,
+        "distance": 66.77
+    },
+    {
+        "name": "Lakeville",
+        "lat": 41.5205,
+        "lng": -86.2891,
+        "OSNR": 30.22,
+        "distance": 78.93
+    },
+    {
+        "name": "Creola",
+        "lat": 30.878,
+        "lng": -88.0417,
+        "OSNR": 31.31,
+        "distance": 73.89
+    },
+    {
+        "name": "Claude",
+        "lat": 35.1019,
+        "lng": -101.36,
+        "OSNR": 32.25,
+        "distance": 70.41
+    },
+    {
+        "name": "Benton",
+        "lat": 34.56454,
+        "lng": -92.58683,
+        "OSNR": 34.05,
+        "distance": 65.74
+    },
+    {
+        "name": "Schurz",
+        "lat": 38.9496,
+        "lng": -118.811,
+        "OSNR": 34.84,
+        "distance": 55.35
+    },
+    {
+        "name": "Toronto",
+        "lat": 43.6519,
+        "lng": -79.3942,
+        "OSNR": 32.63,
+        "distance": 67.48
+    },
+    {
+        "name": "Gainesville_0_1",
+        "lat": 29.6406,
+        "lng": -82.3268,
+        "OSNR": 30.87,
+        "distance": 75.94
+    },
+    {
+        "name": "GilaBend",
+        "lat": 32.9627,
+        "lng": -112.6941,
+        "OSNR": 31.23,
+        "distance": 79.02
+    },
+    {
+        "name": "Salem",
+        "lat": 44.6197,
+        "lng": -92.3577,
+        "OSNR": 30.59,
+        "distance": 77.24
+    },
+    {
+        "name": "HotSprings",
+        "lat": 35.8946,
+        "lng": -82.832,
+        "OSNR": 32.97,
+        "distance": 65.77
+    },
+    {
+        "name": "BeaverDam",
+        "lat": 36.8989,
+        "lng": -113.9346,
+        "OSNR": 34.36,
+        "distance": 58.2
+    },
+    {
+        "name": "Odessa",
+        "lat": 44.2679,
+        "lng": -76.7176,
+        "OSNR": 30.15,
+        "distance": 79.24
+    },
+    {
+        "name": "ElDorado",
+        "lat": 38.6796,
+        "lng": -120.8461,
+        "OSNR": 31.21,
+        "distance": 74.35
+    },
+    {
+        "name": "Rhome",
+        "lat": 33.053,
+        "lng": -97.468,
+        "OSNR": 32.16,
+        "distance": 68.65
+    },
+    {
+        "name": "Blackhawk",
+        "lat": 37.8152,
+        "lng": -121.9064,
+        "OSNR": 30.49,
+        "distance": 78.05
+    },
+    {
+        "name": "Salem_0",
+        "lat": 44.9295,
+        "lng": -123.0335,
+        "OSNR": 31.31,
+        "distance": 73.9
+    },
+    {
+        "name": "Chicago",
+        "lat": 41.8562,
+        "lng": -87.624,
+        "OSNR": 32.91,
+        "distance": 66.04
+    },
+    {
+        "name": "Goodman",
+        "lat": 32.967497,
+        "lng": -89.907497,
+        "OSNR": 32.27,
+        "distance": 72.87
+    },
+    {
+        "name": "Columbia",
+        "lat": 34.0007,
+        "lng": -81.0465,
+        "OSNR": 33.15,
+        "distance": 64.81
+    },
+    {
+        "name": "Beloit",
+        "lat": 42.5085,
+        "lng": -89.0273,
+        "OSNR": 32.77,
+        "distance": 66.75
+    },
+    {
+        "name": "Kentwood",
+        "lat": 30.93824,
+        "lng": -90.50898,
+        "OSNR": 31.95,
+        "distance": 74.15
+    },
+    {
+        "name": "Belleview",
+        "lat": 29.055,
+        "lng": -82.0618,
+        "OSNR": 31.63,
+        "distance": 72.36
+    },
+    {
+        "name": "Springdale",
+        "lat": 37.0298,
+        "lng": -116.7552,
+        "OSNR": 33.23,
+        "distance": 64.41
+    },
+    {
+        "name": "Calgary_0",
+        "lat": 51.05,
+        "lng": -114.0826,
+        "OSNR": 35.96,
+        "distance": 47.98
+    },
+    {
+        "name": "Delle",
+        "lat": 40.76,
+        "lng": -112.7773,
+        "OSNR": 31.41,
+        "distance": 73.44
+    },
+    {
+        "name": "Okotoks",
+        "lat": 50.7199,
+        "lng": -113.9736,
+        "OSNR": 35.36,
+        "distance": 44.81
+    },
+    {
+        "name": "Jackson",
+        "lat": 32.298756,
+        "lng": -90.184807,
+        "OSNR": 31.36,
+        "distance": 78.83
+    },
+    {
+        "name": "NewOrleans",
+        "lat": 29.95465,
+        "lng": -90.07507,
+        "OSNR": 31.17,
+        "distance": 77.29
+    },
+    {
+        "name": "FortBayouEstates",
+        "lat": 30.4207,
+        "lng": -88.7839,
+        "OSNR": 31.38,
+        "distance": 73.55
+    },
+    {
+        "name": "EstillSprings",
+        "lat": 35.270637,
+        "lng": -86.128042,
+        "OSNR": 31.85,
+        "distance": 71.31
+    },
+    {
+        "name": "Madisonville",
+        "lat": 30.9426,
+        "lng": -95.9067,
+        "OSNR": 32.67,
+        "distance": 67.18
+    },
+    {
+        "name": "LakeCountry",
+        "lat": 50.0289,
+        "lng": -119.4031,
+        "OSNR": 33.56,
+        "distance": 62.63
+    },
+    {
+        "name": "Dutton",
+        "lat": 42.6698,
+        "lng": -81.5013,
+        "OSNR": 30.16,
+        "distance": 79.22
+    },
+    {
+        "name": "Imlay",
+        "lat": 40.659,
+        "lng": -118.1493,
+        "OSNR": 31.65,
+        "distance": 72.27
+    },
+    {
+        "name": "Frostproof",
+        "lat": 27.7486,
+        "lng": -81.5299,
+        "OSNR": 31.0,
+        "distance": 75.34
+    },
+    {
+        "name": "Lafayette",
+        "lat": 30.216667,
+        "lng": -92.033333,
+        "OSNR": 30.86,
+        "distance": 78.54
+    },
+    {
+        "name": "Madison",
+        "lat": 43.0488,
+        "lng": -89.3837,
+        "OSNR": 31.15,
+        "distance": 74.64
+    },
+    {
+        "name": "WichitaFalls",
+        "lat": 33.9069,
+        "lng": -98.509,
+        "OSNR": 31.31,
+        "distance": 73.13
+    },
+    {
+        "name": "Strawberry",
+        "lat": 38.7959,
+        "lng": -120.1454,
+        "OSNR": 32.53,
+        "distance": 67.99
+    },
+    {
+        "name": "Brookhaven",
+        "lat": 31.57906,
+        "lng": -90.44065,
+        "OSNR": 30.86,
+        "distance": 78.53
+    },
+    {
+        "name": "Mulberry",
+        "lat": 27.8938,
+        "lng": -81.9736,
+        "OSNR": 33.14,
+        "distance": 63.03
+    },
+    {
+        "name": "Stamford",
+        "lat": 41.0539,
+        "lng": -73.5409,
+        "OSNR": 33.02,
+        "distance": 65.47
+    },
+    {
+        "name": "VanWert",
+        "lat": 40.8631,
+        "lng": -93.7894,
+        "OSNR": 32.27,
+        "distance": 69.27
+    },
+    {
+        "name": "Preble",
+        "lat": 40.9742,
+        "lng": -117.3982,
+        "OSNR": 30.24,
+        "distance": 78.86
+    },
+    {
+        "name": "Montevideo",
+        "lat": 34.2705,
+        "lng": -82.8218,
+        "OSNR": 31.31,
+        "distance": 73.9
+    },
+    {
+        "name": "Oakley",
+        "lat": 39.13334,
+        "lng": -100.86376,
+        "OSNR": 30.61,
+        "distance": 76.04
+    },
+    {
+        "name": "StennisInternationalAirport",
+        "lat": 30.342,
+        "lng": -89.4768,
+        "OSNR": 30.09,
+        "distance": 79.53
+    },
+    {
+        "name": "NorthPowder",
+        "lat": 45.027,
+        "lng": -117.922,
+        "OSNR": 33.85,
+        "distance": 61.07
+    },
+    {
+        "name": "Pasqua",
+        "lat": 50.3709,
+        "lng": -105.3725,
+        "OSNR": 30.24,
+        "distance": 78.83
+    },
+    {
+        "name": "Preston",
+        "lat": 42.08,
+        "lng": -111.8824,
+        "OSNR": 30.9,
+        "distance": 75.82
+    },
+    {
+        "name": "Greenville",
+        "lat": 33.1383333,
+        "lng": -96.1105556,
+        "OSNR": 32.37,
+        "distance": 72.49
+    },
+    {
+        "name": "Trenton",
+        "lat": 34.87202,
+        "lng": -85.50913,
+        "OSNR": 30.37,
+        "distance": 78.26
+    },
+    {
+        "name": "Akron",
+        "lat": 41.0648,
+        "lng": -81.5185,
+        "OSNR": 35.27,
+        "distance": 52.7
+    },
+    {
+        "name": "Dewdney",
+        "lat": 49.1583,
+        "lng": -122.1935,
+        "OSNR": 32.52,
+        "distance": 68.02
+    },
+    {
+        "name": "Chicago_0",
+        "lat": 41.8828,
+        "lng": -87.629,
+        "OSNR": 33.51,
+        "distance": 62.93
+    },
+    {
+        "name": "Calgary",
+        "lat": 51.0565,
+        "lng": -114.2102,
+        "OSNR": 30.11,
+        "distance": 79.45
+    },
+    {
+        "name": "Cameron",
+        "lat": 39.724,
+        "lng": -94.2155,
+        "OSNR": 30.59,
+        "distance": 77.26
+    },
+    {
+        "name": "Belleview_0",
+        "lat": 29.0491,
+        "lng": -82.0571,
+        "OSNR": 31.96,
+        "distance": 70.78
+    },
+    {
+        "name": "Iola",
+        "lat": 37.9275,
+        "lng": -95.40056,
+        "OSNR": 30.79,
+        "distance": 71.69
+    },
+    {
+        "name": "CrossCity",
+        "lat": 29.624,
+        "lng": -83.1122,
+        "OSNR": 32.18,
+        "distance": 69.73
+    },
+    {
+        "name": "ColoradoCity",
+        "lat": 32.3847,
+        "lng": -100.8634,
+        "OSNR": 30.9,
+        "distance": 75.81
+    },
+    {
+        "name": "LintonHall",
+        "lat": 38.7567,
+        "lng": -77.5773,
+        "OSNR": 35.91,
+        "distance": 48.39
+    },
+    {
+        "name": "Tulsa",
+        "lat": 36.15398,
+        "lng": -95.99277,
+        "OSNR": 32.31,
+        "distance": 65.98
+    },
+    {
+        "name": "LasVegas",
+        "lat": 36.1566,
+        "lng": -115.1535,
+        "OSNR": 36.34,
+        "distance": 45.21
+    },
+    {
+        "name": "MountGilead",
+        "lat": 40.5477,
+        "lng": -82.8273,
+        "OSNR": 33.75,
+        "distance": 67.85
+    },
+    {
+        "name": "Hansen",
+        "lat": 42.5311,
+        "lng": -114.2863,
+        "OSNR": 30.05,
+        "distance": 79.69
+    },
+    {
+        "name": "Streeter",
+        "lat": 30.7625,
+        "lng": -99.3769,
+        "OSNR": 32.12,
+        "distance": 70.01
+    },
+    {
+        "name": "Sycamore",
+        "lat": 37.32472,
+        "lng": -95.71528,
+        "OSNR": 31.2,
+        "distance": 73.9
+    },
+    {
+        "name": "Youngstown",
+        "lat": 41.0834,
+        "lng": -80.6467,
+        "OSNR": 31.48,
+        "distance": 73.1
+    },
+    {
+        "name": "Marsh",
+        "lat": 35.5378,
+        "lng": -101.9229,
+        "OSNR": 32.25,
+        "distance": 70.41
+    },
+    {
+        "name": "Arriba",
+        "lat": 39.2861,
+        "lng": -103.275556,
+        "OSNR": 30.94,
+        "distance": 74.89
+    },
+    {
+        "name": "Athens",
+        "lat": 33.9537,
+        "lng": -83.3814,
+        "OSNR": 33.6,
+        "distance": 62.42
+    },
+    {
+        "name": "Gaffney",
+        "lat": 35.0637,
+        "lng": -81.6534,
+        "OSNR": 30.89,
+        "distance": 75.88
+    },
+    {
+        "name": "Savannah",
+        "lat": 32.0574,
+        "lng": -81.14,
+        "OSNR": 32.17,
+        "distance": 69.78
+    },
+    {
+        "name": "Akela",
+        "lat": 32.2402,
+        "lng": -107.4168,
+        "OSNR": 33.98,
+        "distance": 60.38
+    },
+    {
+        "name": "Perry",
+        "lat": 30.1027,
+        "lng": -83.5793,
+        "OSNR": 30.12,
+        "distance": 79.41
+    },
+    {
+        "name": "BoyntonBeach",
+        "lat": 26.5237,
+        "lng": -80.1827,
+        "OSNR": 31.25,
+        "distance": 74.18
+    },
+    {
+        "name": "LakeLouise",
+        "lat": 51.4243,
+        "lng": -116.1774,
+        "OSNR": 34.5,
+        "distance": 57.41
+    },
+    {
+        "name": "Wickenburg",
+        "lat": 33.965,
+        "lng": -112.7301,
+        "OSNR": 30.77,
+        "distance": 76.4
+    },
+    {
+        "name": "NewYork_0",
+        "lat": 40.7192,
+        "lng": -74.0,
+        "OSNR": 33.95,
+        "distance": 60.51
+    },
+    {
+        "name": "SevenSprings",
+        "lat": 40.0234,
+        "lng": -79.2988,
+        "OSNR": 31.27,
+        "distance": 74.07
+    },
+    {
+        "name": "EjidoYucatan",
+        "lat": 32.6111,
+        "lng": -115.0949,
+        "OSNR": 30.92,
+        "distance": 75.06
+    },
+    {
+        "name": "Brookville",
+        "lat": 41.157,
+        "lng": -79.0812,
+        "OSNR": 32.81,
+        "distance": 66.55
+    },
+    {
+        "name": "PortagelaPrairie",
+        "lat": 49.9745,
+        "lng": -98.2319,
+        "OSNR": 30.36,
+        "distance": 78.3
+    },
+    {
+        "name": "Sevierville",
+        "lat": 35.8601,
+        "lng": -83.5607,
+        "OSNR": 32.96,
+        "distance": 65.82
+    },
+    {
+        "name": "Houston_0_1",
+        "lat": 29.7599,
+        "lng": -95.3758,
+        "OSNR": 34.34,
+        "distance": 58.31
+    },
+    {
+        "name": "Tilley",
+        "lat": 50.4562,
+        "lng": -111.6513,
+        "OSNR": 31.49,
+        "distance": 73.03
+    },
+    {
+        "name": "Hamilton",
+        "lat": 43.2171,
+        "lng": -79.9078,
+        "OSNR": 32.77,
+        "distance": 66.77
+    },
+    {
+        "name": "SoapstoneSummerHomes",
+        "lat": 40.5745,
+        "lng": -111.0501,
+        "OSNR": 31.31,
+        "distance": 73.88
+    },
+    {
+        "name": "Galloway",
+        "lat": 29.972,
+        "lng": -94.214,
+        "OSNR": 34.23,
+        "distance": 65.04
+    },
+    {
+        "name": "Stroud",
+        "lat": 35.76833,
+        "lng": -96.64639,
+        "OSNR": 30.58,
+        "distance": 73.16
+    },
+    {
+        "name": "Dalhart",
+        "lat": 36.0492,
+        "lng": -102.5138,
+        "OSNR": 30.12,
+        "distance": 77.94
+    },
+    {
+        "name": "Montague",
+        "lat": 41.7218,
+        "lng": -122.5334,
+        "OSNR": 32.49,
+        "distance": 68.17
+    },
+    {
+        "name": "Levan",
+        "lat": 39.5583,
+        "lng": -111.9101,
+        "OSNR": 30.44,
+        "distance": 77.93
+    },
+    {
+        "name": "Nanton",
+        "lat": 50.3384,
+        "lng": -113.7691,
+        "OSNR": 31.72,
+        "distance": 70.86
+    },
+    {
+        "name": "Sacrameto_0",
+        "lat": 38.6491,
+        "lng": -121.5268,
+        "OSNR": 33.37,
+        "distance": 63.67
+    },
+    {
+        "name": "Dallas",
+        "lat": 32.779167,
+        "lng": -96.808891,
+        "OSNR": 39.98,
+        "distance": 41.8
+    },
+    {
+        "name": "Boonville",
+        "lat": 38.9679,
+        "lng": -92.7479,
+        "OSNR": 32.16,
+        "distance": 69.83
+    },
+    {
+        "name": "MissionViejo",
+        "lat": 33.5987,
+        "lng": -117.672,
+        "OSNR": 31.5,
+        "distance": 73.02
+    },
+    {
+        "name": "Wickett",
+        "lat": 31.5656,
+        "lng": -103.0003,
+        "OSNR": 30.06,
+        "distance": 79.65
+    },
+    {
+        "name": "WillowPark",
+        "lat": 32.755,
+        "lng": -97.6496,
+        "OSNR": 31.65,
+        "distance": 72.29
+    },
+    {
+        "name": "Canyonville",
+        "lat": 42.9121,
+        "lng": -123.2778,
+        "OSNR": 31.33,
+        "distance": 73.79
+    },
+    {
+        "name": "Boracho",
+        "lat": 31.0788,
+        "lng": -104.39,
+        "OSNR": 31.98,
+        "distance": 70.68
+    },
+    {
+        "name": "Lagrange",
+        "lat": 41.6277,
+        "lng": -85.4229,
+        "OSNR": 31.49,
+        "distance": 73.04
+    },
+    {
+        "name": "Townson",
+        "lat": 39.3953,
+        "lng": -76.604,
+        "OSNR": 33.0,
+        "distance": 65.58
+    },
+    {
+        "name": "Bowie",
+        "lat": 32.3243,
+        "lng": -109.4859,
+        "OSNR": 31.76,
+        "distance": 71.78
+    },
+    {
+        "name": "SouthClewiston",
+        "lat": 26.7045,
+        "lng": -80.9009,
+        "OSNR": 32.29,
+        "distance": 69.2
+    },
+    {
+        "name": "Vernal",
+        "lat": 40.4472,
+        "lng": -109.5291,
+        "OSNR": 33.18,
+        "distance": 64.69
+    },
+    {
+        "name": "Wolseley",
+        "lat": 50.4147,
+        "lng": -103.262,
+        "OSNR": 31.92,
+        "distance": 71.0
+    },
+    {
+        "name": "Taylorville",
+        "lat": 39.5527,
+        "lng": -89.2788,
+        "OSNR": 30.1,
+        "distance": 79.49
+    },
+    {
+        "name": "Helendale",
+        "lat": 34.7424,
+        "lng": -117.3247,
+        "OSNR": 31.91,
+        "distance": 71.05
+    },
+    {
+        "name": "Webb",
+        "lat": 50.1877,
+        "lng": -108.1987,
+        "OSNR": 31.25,
+        "distance": 74.2
+    },
+    {
+        "name": "Florence",
+        "lat": 33.0236,
+        "lng": -111.385,
+        "OSNR": 35.68,
+        "distance": 49.99
+    },
+    {
+        "name": "DuckHill",
+        "lat": 33.631287,
+        "lng": -89.709117,
+        "OSNR": 30.69,
+        "distance": 79.21
+    },
+    {
+        "name": "Trinidad",
+        "lat": 37.1647,
+        "lng": -104.4994,
+        "OSNR": 33.23,
+        "distance": 64.94
+    },
+    {
+        "name": "Brookshire",
+        "lat": 29.7776,
+        "lng": -95.9509,
+        "OSNR": 31.47,
+        "distance": 73.16
+    },
+    {
+        "name": "Redding",
+        "lat": 40.5658,
+        "lng": -122.3796,
+        "OSNR": 31.47,
+        "distance": 73.16
+    },
+    {
+        "name": "Portland_0_1",
+        "lat": 45.5242,
+        "lng": -122.663,
+        "OSNR": 32.5,
+        "distance": 68.15
+    },
+    {
+        "name": "FortLancaster",
+        "lat": 30.6663,
+        "lng": -101.6946,
+        "OSNR": 33.53,
+        "distance": 62.79
+    },
+    {
+        "name": "Dowelltown",
+        "lat": 36.0132,
+        "lng": -85.942,
+        "OSNR": 30.52,
+        "distance": 77.57
+    },
+    {
+        "name": "WarnerRobins",
+        "lat": 32.6237,
+        "lng": -83.6286,
+        "OSNR": 30.9,
+        "distance": 75.57
+    },
+    {
+        "name": "Nashville",
+        "lat": 36.16589,
+        "lng": -86.78444,
+        "OSNR": 35.9,
+        "distance": 48.41
+    },
+    {
+        "name": "KingdomCity",
+        "lat": 38.9412,
+        "lng": -91.941,
+        "OSNR": 32.14,
+        "distance": 69.92
+    },
+    {
+        "name": "Ligurta",
+        "lat": 32.6745,
+        "lng": -114.2968,
+        "OSNR": 30.78,
+        "distance": 75.68
+    },
+    {
+        "name": "Wasco",
+        "lat": 35.5964,
+        "lng": -119.3403,
+        "OSNR": 30.78,
+        "distance": 76.49
+    },
+    {
+        "name": "Culpeper",
+        "lat": 38.4675,
+        "lng": -77.9934,
+        "OSNR": 31.73,
+        "distance": 71.9
+    },
+    {
+        "name": "Wigwam",
+        "lat": 38.5371,
+        "lng": -104.6365,
+        "OSNR": 29.98,
+        "distance": 79.93
+    },
+    {
+        "name": "Detroit_0",
+        "lat": 42.3296,
+        "lng": -83.0838,
+        "OSNR": 33.78,
+        "distance": 61.48
+    },
+    {
+        "name": "Knightsville",
+        "lat": 39.5226,
+        "lng": -86.236,
+        "OSNR": 30.65,
+        "distance": 77.45
+    },
+    {
+        "name": "Mobile",
+        "lat": 30.6864,
+        "lng": -88.0586,
+        "OSNR": 30.97,
+        "distance": 75.48
+    },
+    {
+        "name": "WheelerRidge",
+        "lat": 34.9907,
+        "lng": -118.941,
+        "OSNR": 30.1,
+        "distance": 79.8
+    },
+    {
+        "name": "Bloominton",
+        "lat": 39.1172,
+        "lng": -86.5439,
+        "OSNR": 31.32,
+        "distance": 73.87
+    },
+    {
+        "name": "Houston_0",
+        "lat": 29.772,
+        "lng": -95.3728,
+        "OSNR": 31.45,
+        "distance": 73.2
+    },
+    {
+        "name": "BooktreePark",
+        "lat": 47.0028,
+        "lng": -96.8965,
+        "OSNR": 31.3,
+        "distance": 75.4
+    },
+    {
+        "name": "Tampa",
+        "lat": 27.9573,
+        "lng": -82.4567,
+        "OSNR": 35.32,
+        "distance": 52.35
+    },
+    {
+        "name": "Lakeway",
+        "lat": 30.3516,
+        "lng": -97.9872,
+        "OSNR": 30.01,
+        "distance": 79.88
+    },
+    {
+        "name": "Capulin",
+        "lat": 36.7424,
+        "lng": -103.9945,
+        "OSNR": 29.98,
+        "distance": 78.87
+    },
+    {
+        "name": "StoryCity",
+        "lat": 42.1735,
+        "lng": -93.6111,
+        "OSNR": 31.84,
+        "distance": 71.36
+    },
+    {
+        "name": "Franklin",
+        "lat": 36.7058,
+        "lng": -86.5662,
+        "OSNR": 34.03,
+        "distance": 60.09
+    },
+    {
+        "name": "Bethune",
+        "lat": 39.3042,
+        "lng": -102.4246,
+        "OSNR": 31.23,
+        "distance": 73.74
+    },
+    {
+        "name": "Wellborn",
+        "lat": 30.234,
+        "lng": -82.821,
+        "OSNR": 29.98,
+        "distance": 79.9
+    },
+    {
+        "name": "Denmark",
+        "lat": 33.3215,
+        "lng": -81.1383,
+        "OSNR": 30.86,
+        "distance": 76.0
+    },
+    {
+        "name": "Belmond",
+        "lat": 42.8336,
+        "lng": -93.6138,
+        "OSNR": 31.42,
+        "distance": 73.4
+    },
+    {
+        "name": "Fairfield_0",
+        "lat": 38.2427,
+        "lng": -122.0418,
+        "OSNR": 31.01,
+        "distance": 75.3
+    },
+    {
+        "name": "Crestview",
+        "lat": 30.7525,
+        "lng": -86.563,
+        "OSNR": 31.72,
+        "distance": 71.93
+    },
+    {
+        "name": "Sacrameto",
+        "lat": 38.5738,
+        "lng": -121.5009,
+        "OSNR": 33.78,
+        "distance": 61.44
+    },
+    {
+        "name": "Granby",
+        "lat": 45.3791,
+        "lng": -72.7099,
+        "OSNR": 31.54,
+        "distance": 68.35
+    },
+    {
+        "name": "TheDalles",
+        "lat": 45.5893,
+        "lng": -121.1655,
+        "OSNR": 30.95,
+        "distance": 75.61
+    },
+    {
+        "name": "Valdosta",
+        "lat": 30.8366,
+        "lng": -83.2754,
+        "OSNR": 31.72,
+        "distance": 71.92
+    },
+    {
+        "name": "Polk",
+        "lat": 40.9436,
+        "lng": -82.2144,
+        "OSNR": 30.09,
+        "distance": 75.53
+    },
+    {
+        "name": "FortDeposit",
+        "lat": 31.9754,
+        "lng": -86.5643,
+        "OSNR": 31.7,
+        "distance": 72.05
+    },
+    {
+        "name": "Lowell",
+        "lat": 41.2819,
+        "lng": -87.422,
+        "OSNR": 36.2,
+        "distance": 46.24
+    },
+    {
+        "name": "Boulder",
+        "lat": 46.2387,
+        "lng": -112.1267,
+        "OSNR": 33.14,
+        "distance": 65.33
+    },
+    {
+        "name": "Philadelphia",
+        "lat": 39.9265,
+        "lng": -75.206,
+        "OSNR": 35.0,
+        "distance": 54.38
+    },
+    {
+        "name": "Blair",
+        "lat": 40.7374,
+        "lng": -113.9787,
+        "OSNR": 25.03,
+        "distance": 101.23
+    },
+    {
+        "name": "Wlliamsport",
+        "lat": 41.2375,
+        "lng": -77.005,
+        "OSNR": 31.58,
+        "distance": 72.63
+    },
+    {
+        "name": "BatonRouge",
+        "lat": 30.471165,
+        "lng": -91.147385,
+        "OSNR": 30.96,
+        "distance": 78.14
+    },
+    {
+        "name": "Glenshire-Devonshire",
+        "lat": 39.3555,
+        "lng": -120.097,
+        "OSNR": 30.24,
+        "distance": 78.85
+    },
+    {
+        "name": "Adairsville",
+        "lat": 34.368672,
+        "lng": -84.934505,
+        "OSNR": 30.28,
+        "distance": 78.67
+    },
+    {
+        "name": "Vinton",
+        "lat": 30.1911244,
+        "lng": -93.5813576,
+        "OSNR": 30.86,
+        "distance": 73.82
+    },
+    {
+        "name": "Warrenton_0",
+        "lat": 41.2304,
+        "lng": -80.8211,
+        "OSNR": 30.24,
+        "distance": 78.86
+    },
+    {
+        "name": "Saline",
+        "lat": 42.1572,
+        "lng": -83.7934,
+        "OSNR": 31.22,
+        "distance": 74.31
+    },
+    {
+        "name": "Piapot",
+        "lat": 49.9954,
+        "lng": -109.1169,
+        "OSNR": 32.34,
+        "distance": 68.91
+    },
+    {
+        "name": "RedRock",
+        "lat": 32.5766,
+        "lng": -111.3282,
+        "OSNR": 30.6,
+        "distance": 77.19
+    },
+    {
+        "name": "Morita",
+        "lat": 32.1836,
+        "lng": -101.634,
+        "OSNR": 31.66,
+        "distance": 72.22
+    },
+    {
+        "name": "SanFrancisco",
+        "lat": 37.7773,
+        "lng": -122.4164,
+        "OSNR": 35.0,
+        "distance": 54.52
+    },
+    {
+        "name": "Ontario",
+        "lat": 44.0284,
+        "lng": -116.9592,
+        "OSNR": 32.93,
+        "distance": 65.95
+    },
+    {
+        "name": "Franklin_0",
+        "lat": 39.5575,
+        "lng": -84.3032,
+        "OSNR": 34.76,
+        "distance": 57.82
+    },
+    {
+        "name": "Balgonie",
+        "lat": 50.4841,
+        "lng": -104.274,
+        "OSNR": 31.7,
+        "distance": 72.07
+    },
+    {
+        "name": "Moor",
+        "lat": 41.1132,
+        "lng": -114.7982,
+        "OSNR": 30.0,
+        "distance": 79.94
+    },
+    {
+        "name": "Merkel",
+        "lat": 32.4658,
+        "lng": -100.0176,
+        "OSNR": 30.01,
+        "distance": 79.89
+    },
+    {
+        "name": "OklahomaCity",
+        "lat": 35.481918,
+        "lng": -97.508469,
+        "OSNR": 31.4,
+        "distance": 78.31
+    },
+    {
+        "name": "Willard_0",
+        "lat": 41.4077,
+        "lng": -112.0351,
+        "OSNR": 31.53,
+        "distance": 72.95
+    },
+    {
+        "name": "SpringBankPark",
+        "lat": 44.0091,
+        "lng": -90.6209,
+        "OSNR": 31.03,
+        "distance": 75.21
+    },
+    {
+        "name": "Stanfield",
+        "lat": 45.7618,
+        "lng": -119.2046,
+        "OSNR": 32.68,
+        "distance": 67.25
+    },
+    {
+        "name": "Columbus",
+        "lat": 39.9543,
+        "lng": -82.9937,
+        "OSNR": 33.81,
+        "distance": 67.48
+    },
+    {
+        "name": "Cincinnati",
+        "lat": 39.1407,
+        "lng": -84.5819,
+        "OSNR": 30.25,
+        "distance": 78.8
+    },
+    {
+        "name": "Toyah",
+        "lat": 31.3167,
+        "lng": -103.7875,
+        "OSNR": 33.47,
+        "distance": 63.12
+    },
+    {
+        "name": "Phoenix",
+        "lat": 33.4862,
+        "lng": -112.1114,
+        "OSNR": 30.39,
+        "distance": 78.16
+    },
+    {
+        "name": "Leesburg",
+        "lat": 39.1044,
+        "lng": -77.5603,
+        "OSNR": 35.52,
+        "distance": 51.06
+    },
+    {
+        "name": "Newtonville",
+        "lat": 43.9355,
+        "lng": -78.4904,
+        "OSNR": 30.57,
+        "distance": 77.35
+    },
+    {
+        "name": "Arlington",
+        "lat": 48.177,
+        "lng": -122.1415,
+        "OSNR": 32.82,
+        "distance": 67.12
+    },
+    {
+        "name": "Lima",
+        "lat": 44.6276,
+        "lng": -112.5827,
+        "OSNR": 31.82,
+        "distance": 71.23
+    },
+    {
+        "name": "Bartlesville",
+        "lat": 36.74722,
+        "lng": -95.95944,
+        "OSNR": 31.95,
+        "distance": 67.32
+    },
+    {
+        "name": "DesArc",
+        "lat": 37.2836,
+        "lng": -90.6371,
+        "OSNR": 31.65,
+        "distance": 72.28
+    },
+    {
+        "name": "Detroit",
+        "lat": 42.3334,
+        "lng": -83.035,
+        "OSNR": 30.94,
+        "distance": 75.64
+    },
+    {
+        "name": "DesMoines",
+        "lat": 41.5322,
+        "lng": -93.6416,
+        "OSNR": 30.99,
+        "distance": 75.42
+    },
+    {
+        "name": "Medford_0",
+        "lat": 42.3177,
+        "lng": -122.8768,
+        "OSNR": 31.69,
+        "distance": 72.08
+    },
+    {
+        "name": "Hamilton_0",
+        "lat": 43.2493,
+        "lng": -79.8773,
+        "OSNR": 35.14,
+        "distance": 53.48
+    },
+    {
+        "name": "McCammon",
+        "lat": 42.6456,
+        "lng": -112.1897,
+        "OSNR": 32.66,
+        "distance": 67.77
+    },
+    {
+        "name": "Tifton",
+        "lat": 31.451,
+        "lng": -83.5113,
+        "OSNR": 33.48,
+        "distance": 62.6
+    },
+    {
+        "name": "Bastrop",
+        "lat": 30.1036,
+        "lng": -97.3115,
+        "OSNR": 32.01,
+        "distance": 70.53
+    },
+    {
+        "name": "Frisco",
+        "lat": 33.155373,
+        "lng": -96.818733,
+        "OSNR": 36.33,
+        "distance": 59.8
+    },
+    {
+        "name": "Bouse",
+        "lat": 33.9319,
+        "lng": -114.0068,
+        "OSNR": 32.68,
+        "distance": 67.23
+    },
+    {
+        "name": "Hunlock",
+        "lat": 41.2076,
+        "lng": -76.081,
+        "OSNR": 30.57,
+        "distance": 77.35
+    },
+    {
+        "name": "Gainesville",
+        "lat": 33.62594,
+        "lng": -97.13335,
+        "OSNR": 34.98,
+        "distance": 62.03
+    },
+    {
+        "name": "DadeCity",
+        "lat": 28.3674,
+        "lng": -82.1944,
+        "OSNR": 30.52,
+        "distance": 77.55
+    },
+    {
+        "name": "Mallorytown",
+        "lat": 44.4755,
+        "lng": -75.877,
+        "OSNR": 30.17,
+        "distance": 79.17
+    },
+    {
+        "name": "Crossville",
+        "lat": 35.9527,
+        "lng": -85.0834,
+        "OSNR": 30.31,
+        "distance": 78.51
+    },
+    {
+        "name": "StLouis_0",
+        "lat": 38.6256,
+        "lng": -90.1703,
+        "OSNR": 31.91,
+        "distance": 71.91
+    },
+    {
+        "name": "Hendersonville",
+        "lat": 35.3123,
+        "lng": -82.4592,
+        "OSNR": 31.5,
+        "distance": 73.0
+    },
+    {
+        "name": "HalloranSprings",
+        "lat": 35.3718,
+        "lng": -115.8904,
+        "OSNR": 31.12,
+        "distance": 74.81
+    },
+    {
+        "name": "Brownsville",
+        "lat": 37.1942,
+        "lng": -86.2767,
+        "OSNR": 30.77,
+        "distance": 76.41
+    },
+    {
+        "name": "Minto",
+        "lat": 48.2849,
+        "lng": -97.3776,
+        "OSNR": 31.87,
+        "distance": 71.21
+    },
+    {
+        "name": "Sacrameto_0_1_2",
+        "lat": 38.66,
+        "lng": -121.3672,
+        "OSNR": 31.55,
+        "distance": 72.75
+    },
+    {
+        "name": "EagleFlat",
+        "lat": 31.1107,
+        "lng": -105.1314,
+        "OSNR": 31.91,
+        "distance": 71.02
+    },
+    {
+        "name": "Irvington",
+        "lat": 37.8813,
+        "lng": -86.2862,
+        "OSNR": 33.24,
+        "distance": 64.36
+    },
+    {
+        "name": "Dateland",
+        "lat": 32.8196,
+        "lng": -113.5062,
+        "OSNR": 30.53,
+        "distance": 77.48
+    },
+    {
+        "name": "Stroudsburg",
+        "lat": 40.9905,
+        "lng": -75.183,
+        "OSNR": 30.2,
+        "distance": 79.03
+    },
+    {
+        "name": "Toronto_0",
+        "lat": 43.7602,
+        "lng": -79.32,
+        "OSNR": 31.49,
+        "distance": 73.07
+    },
+    {
+        "name": "BullheadCity",
+        "lat": 35.1469,
+        "lng": -114.5662,
+        "OSNR": 33.26,
+        "distance": 64.24
+    },
+    {
+        "name": "Corsicana",
+        "lat": 32.0839,
+        "lng": -96.802,
+        "OSNR": 30.3,
+        "distance": 77.36
+    },
+    {
+        "name": "FortIrwin",
+        "lat": 35.244,
+        "lng": -116.6998,
+        "OSNR": 30.05,
+        "distance": 79.69
+    },
+    {
+        "name": "Ledger",
+        "lat": 48.2571,
+        "lng": -111.8254,
+        "OSNR": 31.47,
+        "distance": 73.19
+    },
+    {
+        "name": "MountVernon",
+        "lat": 33.22,
+        "lng": -95.24,
+        "OSNR": 30.65,
+        "distance": 79.37
+    },
+    {
+        "name": "Alexander",
+        "lat": 49.8306,
+        "lng": -100.2949,
+        "OSNR": 32.26,
+        "distance": 69.33
+    },
+    {
+        "name": "Osawatomie",
+        "lat": 38.497746,
+        "lng": -94.960602,
+        "OSNR": 30.63,
+        "distance": 75.99
+    },
+    {
+        "name": "Shelby",
+        "lat": 35.2742,
+        "lng": -81.5717,
+        "OSNR": 30.06,
+        "distance": 79.65
+    },
+    {
+        "name": "Sacrameto_0_1",
+        "lat": 38.588,
+        "lng": -121.4577,
+        "OSNR": 35.05,
+        "distance": 54.09
+    },
+    {
+        "name": "Dubois",
+        "lat": 44.1787,
+        "lng": -112.2281,
+        "OSNR": 33.07,
+        "distance": 61.42
+    },
+    {
+        "name": "Evansville",
+        "lat": 45.9932,
+        "lng": -95.68,
+        "OSNR": 31.35,
+        "distance": 70.86
+    },
+    {
+        "name": "Hope",
+        "lat": 33.669964,
+        "lng": -93.590096,
+        "OSNR": 30.69,
+        "distance": 79.21
+    },
+    {
+        "name": "Searchlight",
+        "lat": 35.4564,
+        "lng": -114.92,
+        "OSNR": 30.76,
+        "distance": 76.48
+    },
+    {
+        "name": "Atlanta",
+        "lat": 33.786,
+        "lng": -84.2205,
+        "OSNR": 30.05,
+        "distance": 79.69
+    },
+    {
+        "name": "Portland_0",
+        "lat": 45.5287,
+        "lng": -122.6625,
+        "OSNR": 34.55,
+        "distance": 45.52
+    },
+    {
+        "name": "Charlotte",
+        "lat": 35.2259,
+        "lng": -80.8508,
+        "OSNR": 32.98,
+        "distance": 65.69
+    },
+    {
+        "name": "LasCruces",
+        "lat": 32.3045,
+        "lng": -106.7791,
+        "OSNR": 32.79,
+        "distance": 66.65
+    },
+    {
+        "name": "Fernley",
+        "lat": 39.6061,
+        "lng": -119.2376,
+        "OSNR": 31.73,
+        "distance": 71.91
+    },
+    {
+        "name": "Sweetbriar",
+        "lat": 41.1298,
+        "lng": -122.3208,
+        "OSNR": 30.57,
+        "distance": 77.33
+    },
+    {
+        "name": "Memphis_0",
+        "lat": 35.2265,
+        "lng": -90.2045,
+        "OSNR": 30.15,
+        "distance": 79.27
+    },
+    {
+        "name": "Clearfield",
+        "lat": 41.0235,
+        "lng": -78.4303,
+        "OSNR": 33.03,
+        "distance": 65.43
+    },
+    {
+        "name": "Llano",
+        "lat": 30.7445,
+        "lng": -98.6856,
+        "OSNR": 32.91,
+        "distance": 66.08
+    },
+    {
+        "name": "Hedley",
+        "lat": 34.8544,
+        "lng": -100.6487,
+        "OSNR": 30.71,
+        "distance": 75.55
+    },
+    {
+        "name": "Larkspur",
+        "lat": 39.2237,
+        "lng": -104.881,
+        "OSNR": 30.06,
+        "distance": 79.23
+    },
+    {
+        "name": "Collyer",
+        "lat": 39.03556,
+        "lng": -100.11778,
+        "OSNR": 32.53,
+        "distance": 65.12
+    },
+    {
+        "name": "Waterbury",
+        "lat": 41.5455,
+        "lng": -73.0505,
+        "OSNR": 33.05,
+        "distance": 68.31
+    },
+    {
+        "name": "Appomattox",
+        "lat": 37.3516,
+        "lng": -78.8189,
+        "OSNR": 33.01,
+        "distance": 65.55
+    },
+    {
+        "name": "GumSprings",
+        "lat": 34.06732,
+        "lng": -93.0918391,
+        "OSNR": 32.81,
+        "distance": 70.72
+    },
+    {
+        "name": "Milesburg",
+        "lat": 40.9427,
+        "lng": -77.7783,
+        "OSNR": 32.36,
+        "distance": 68.82
+    },
+    {
+        "name": "PineGrove",
+        "lat": 32.7159,
+        "lng": -85.2519,
+        "OSNR": 31.64,
+        "distance": 72.32
+    },
+    {
+        "name": "WashingtonDC_0",
+        "lat": 38.9002,
+        "lng": -77.0365,
+        "OSNR": 34.47,
+        "distance": 57.55
+    },
+    {
+        "name": "Winchester",
+        "lat": 39.162,
+        "lng": -78.1476,
+        "OSNR": 30.74,
+        "distance": 76.58
+    },
+    {
+        "name": "Minneapolis",
+        "lat": 44.8607,
+        "lng": -93.275,
+        "OSNR": 30.57,
+        "distance": 77.34
+    },
+    {
+        "name": "Wenden",
+        "lat": 33.8232,
+        "lng": -113.54,
+        "OSNR": 36.39,
+        "distance": 44.76
+    },
+    {
+        "name": "Caryville",
+        "lat": 30.7719,
+        "lng": -85.8132,
+        "OSNR": 31.78,
+        "distance": 71.68
+    },
+    {
+        "name": "Hays",
+        "lat": 38.87944,
+        "lng": -99.32222,
+        "OSNR": 31.37,
+        "distance": 69.53
+    },
+    {
+        "name": "Brainsville",
+        "lat": 45.1813,
+        "lng": -74.4121,
+        "OSNR": 31.29,
+        "distance": 74.0
+    }
+];
+    const LINKS = [
+    {
+        "id": "L0",
+        "from": "Vancouver",
+        "to": "Calgary",
+        "percentage": 10,
+        "amplifiers": [
+            "Dewdney",
+            "Yale",
+            "Princeton",
+            "Penticton",
+            "LakeCountry",
+            "SalmonArm",
+            "Revelstoke",
+            "Golden",
+            "LakeLouise",
+            "Canmore",
+            "Calgary"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L0_102_125",
+                "slices": "102-125"
+            },
+            {
+                "demand": "Demand_L0_307_334",
+                "slices": "307-334"
+            },
+            {
+                "demand": "Demand_L0_410_429",
+                "slices": "410-429"
+            },
+            {
+                "demand": "Demand_L0_750_753",
+                "slices": "750-753"
+            }
+        ]
+    },
+    {
+        "id": "L1",
+        "from": "Vancouver",
+        "to": "Seattle",
+        "percentage": 27,
+        "amplifiers": [
+            "Bellingham",
+            "Arlington",
+            "Seattle"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L1_164_179",
+                "slices": "164-179"
+            },
+            {
+                "demand": "Demand_L1_366_441",
+                "slices": "366-441"
+            },
+            {
+                "demand": "Demand_L1_463_478",
+                "slices": "463-478"
+            },
+            {
+                "demand": "Demand_L1_502_509",
+                "slices": "502-509"
+            },
+            {
+                "demand": "Demand_L1_550_593",
+                "slices": "550-593"
+            },
+            {
+                "demand": "Demand_L1_635_682",
+                "slices": "635-682"
+            }
+        ]
+    },
+    {
+        "id": "L2",
+        "from": "LosAngeles",
+        "to": "SanFrancisco",
+        "percentage": 11,
+        "amplifiers": [
+            "Lancaster",
+            "WheelerRidge",
+            "Wasco",
+            "Visalia",
+            "Fresno",
+            "Lingard",
+            "Modesto",
+            "Blackhawk",
+            "SanFrancisco"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L2_268_291",
+                "slices": "268-291"
+            },
+            {
+                "demand": "Demand_L2_322_357",
+                "slices": "322-357"
+            },
+            {
+                "demand": "Demand_L2_438_441",
+                "slices": "438-441"
+            },
+            {
+                "demand": "Demand_L2_606_625",
+                "slices": "606-625"
+            }
+        ]
+    },
+    {
+        "id": "L3",
+        "from": "LosAngeles",
+        "to": "LasVegas",
+        "percentage": 10,
+        "amplifiers": [
+            "SanBernardino",
+            "Helendale",
+            "FortIrwin",
+            "HalloranSprings",
+            "Jean",
+            "LasVegas"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L3_312_351",
+                "slices": "312-351"
+            },
+            {
+                "demand": "Demand_L3_564_567",
+                "slices": "564-567"
+            },
+            {
+                "demand": "Demand_L3_655_686",
+                "slices": "655-686"
+            }
+        ]
+    },
+    {
+        "id": "L4",
+        "from": "LosAngeles",
+        "to": "SanDiego",
+        "percentage": 30,
+        "amplifiers": [
+            "MissionViejo",
+            "Oceanside",
+            "SanDiego"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L4_29_32",
+                "slices": "29-32"
+            },
+            {
+                "demand": "Demand_L4_82_121",
+                "slices": "82-121"
+            },
+            {
+                "demand": "Demand_L4_149_168",
+                "slices": "149-168"
+            },
+            {
+                "demand": "Demand_L4_263_298",
+                "slices": "263-298"
+            },
+            {
+                "demand": "Demand_L4_400_419",
+                "slices": "400-419"
+            },
+            {
+                "demand": "Demand_L4_439_442",
+                "slices": "439-442"
+            },
+            {
+                "demand": "Demand_L4_487_582",
+                "slices": "487-582"
+            },
+            {
+                "demand": "Demand_L4_728_739",
+                "slices": "728-739"
+            }
+        ]
+    },
+    {
+        "id": "L6",
+        "from": "SanFrancisco",
+        "to": "Portland",
+        "percentage": 14,
+        "amplifiers": [
+            "Fairfield_0",
+            "Sacrameto_0",
+            "Gridley",
+            "Corning",
+            "Redding",
+            "Sweetbriar",
+            "Montague",
+            "Medford_0",
+            "Canyonville",
+            "Yoncalla",
+            "Harrisburg",
+            "Salem_0",
+            "Portland"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L6_20_39",
+                "slices": "20-39"
+            },
+            {
+                "demand": "Demand_L6_43_122",
+                "slices": "43-122"
+            },
+            {
+                "demand": "Demand_L6_747_750",
+                "slices": "747-750"
+            },
+            {
+                "demand": "Demand_L6_756_759",
+                "slices": "756-759"
+            }
+        ]
+    },
+    {
+        "id": "L7",
+        "from": "SanFrancisco",
+        "to": "Sacrameto",
+        "percentage": 19,
+        "amplifiers": [
+            "Fairfield",
+            "Sacrameto"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L7_202_241",
+                "slices": "202-241"
+            },
+            {
+                "demand": "Demand_L7_332_343",
+                "slices": "332-343"
+            },
+            {
+                "demand": "Demand_L7_432_443",
+                "slices": "432-443"
+            },
+            {
+                "demand": "Demand_L7_497_560",
+                "slices": "497-560"
+            },
+            {
+                "demand": "Demand_L7_725_740",
+                "slices": "725-740"
+            }
+        ]
+    },
+    {
+        "id": "L9",
+        "from": "LasVegas",
+        "to": "SaltLakeCity",
+        "percentage": 23,
+        "amplifiers": [
+            "MoapaValley",
+            "BeaverDam",
+            "AndersonJunction",
+            "Parowan",
+            "Manderfield",
+            "Fillmore",
+            "Levan",
+            "SpanishFork",
+            "SaltLakeCity"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L9_50_61",
+                "slices": "50-61"
+            },
+            {
+                "demand": "Demand_L9_67_86",
+                "slices": "67-86"
+            },
+            {
+                "demand": "Demand_L9_400_451",
+                "slices": "400-451"
+            },
+            {
+                "demand": "Demand_L9_542_553",
+                "slices": "542-553"
+            },
+            {
+                "demand": "Demand_L9_560_639",
+                "slices": "560-639"
+            }
+        ]
+    },
+    {
+        "id": "L10",
+        "from": "LasVegas",
+        "to": "Sacrameto",
+        "percentage": 10,
+        "amplifiers": [
+            "CactusSprings",
+            "LathropWells",
+            "Springdale",
+            "LidaJunction",
+            "Tonopah",
+            "TonopahJunction",
+            "Hawthorne",
+            "Schurz",
+            "GardnervilleRanchos",
+            "Strawberry",
+            "ElDorado",
+            "Sacrameto_0_1"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L10_272_283",
+                "slices": "272-283"
+            },
+            {
+                "demand": "Demand_L10_297_304",
+                "slices": "297-304"
+            },
+            {
+                "demand": "Demand_L10_464_511",
+                "slices": "464-511"
+            },
+            {
+                "demand": "Demand_L10_564_571",
+                "slices": "564-571"
+            }
+        ]
+    },
+    {
+        "id": "L11",
+        "from": "LasVegas",
+        "to": "Phoenix",
+        "percentage": 10,
+        "amplifiers": [
+            "Searchlight",
+            "BullheadCity",
+            "LakeHavasuCity",
+            "Bouse",
+            "Wenden",
+            "Wickenburg",
+            "Phoenix"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L11_17_24",
+                "slices": "17-24"
+            },
+            {
+                "demand": "Demand_L11_515_522",
+                "slices": "515-522"
+            },
+            {
+                "demand": "Demand_L11_572_615",
+                "slices": "572-615"
+            },
+            {
+                "demand": "Demand_L11_731_742",
+                "slices": "731-742"
+            },
+            {
+                "demand": "Demand_L11_760_763",
+                "slices": "760-763"
+            }
+        ]
+    },
+    {
+        "id": "L13",
+        "from": "SaltLakeCity",
+        "to": "Denver",
+        "percentage": 20,
+        "amplifiers": [
+            "SoapstoneSummerHomes",
+            "Altamont_0",
+            "Vernal",
+            "Rangely",
+            "Meeker",
+            "Hayden",
+            "Toponas",
+            "Granby_0",
+            "Denver"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L13_95_162",
+                "slices": "95-162"
+            },
+            {
+                "demand": "Demand_L13_324_347",
+                "slices": "324-347"
+            },
+            {
+                "demand": "Demand_L13_406_425",
+                "slices": "406-425"
+            },
+            {
+                "demand": "Demand_L13_450_473",
+                "slices": "450-473"
+            },
+            {
+                "demand": "Demand_L13_723_726",
+                "slices": "723-726"
+            },
+            {
+                "demand": "Demand_L13_747_758",
+                "slices": "747-758"
+            }
+        ]
+    },
+    {
+        "id": "L14",
+        "from": "SaltLakeCity",
+        "to": "Calgary",
+        "percentage": 34,
+        "amplifiers": [
+            "Willard_0",
+            "Preston",
+            "McCammon",
+            "Blackfoot",
+            "Rigby",
+            "Dubois",
+            "Lima",
+            "Dillon",
+            "Woodin",
+            "Boulder",
+            "Sieben",
+            "Fairfield_0_1",
+            "Ledger",
+            "Sunburst",
+            "NewDayton",
+            "Nobleford",
+            "Nanton",
+            "Okotoks",
+            "Calgary_0_1"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L14_58_97",
+                "slices": "58-97"
+            },
+            {
+                "demand": "Demand_L14_117_148",
+                "slices": "117-148"
+            },
+            {
+                "demand": "Demand_L14_164_207",
+                "slices": "164-207"
+            },
+            {
+                "demand": "Demand_L14_245_260",
+                "slices": "245-260"
+            },
+            {
+                "demand": "Demand_L14_300_303",
+                "slices": "300-303"
+            },
+            {
+                "demand": "Demand_L14_472_551",
+                "slices": "472-551"
+            },
+            {
+                "demand": "Demand_L14_582_613",
+                "slices": "582-613"
+            },
+            {
+                "demand": "Demand_L14_618_629",
+                "slices": "618-629"
+            }
+        ]
+    },
+    {
+        "id": "L15",
+        "from": "SaltLakeCity",
+        "to": "Portland",
+        "percentage": 22,
+        "amplifiers": [
+            "Willard",
+            "Snowville",
+            "Malta",
+            "Hansen",
+            "Bliss",
+            "MountainHome",
+            "Meridian",
+            "Ontario",
+            "Durkee",
+            "NorthPowder",
+            "Meacham",
+            "Stanfield",
+            "Arlinton",
+            "TheDalles",
+            "CascadeLocks",
+            "Portland_0_1"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L15_57_136",
+                "slices": "57-136"
+            },
+            {
+                "demand": "Demand_L15_379_450",
+                "slices": "379-450"
+            },
+            {
+                "demand": "Demand_L15_538_553",
+                "slices": "538-553"
+            }
+        ]
+    },
+    {
+        "id": "L16",
+        "from": "SaltLakeCity",
+        "to": "Sacrameto",
+        "percentage": 19,
+        "amplifiers": [
+            "Delle",
+            "Blair",
+            "Moor",
+            "Coin",
+            "Dunphy",
+            "Preble",
+            "Imlay",
+            "Toulon",
+            "Fernley",
+            "Glenshire-Devonshire",
+            "GoldRun",
+            "Sacrameto_0_1_2"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L16_135_138",
+                "slices": "135-138"
+            },
+            {
+                "demand": "Demand_L16_225_292",
+                "slices": "225-292"
+            },
+            {
+                "demand": "Demand_L16_432_443",
+                "slices": "432-443"
+            },
+            {
+                "demand": "Demand_L16_656_715",
+                "slices": "656-715"
+            }
+        ]
+    },
+    {
+        "id": "L17",
+        "from": "ElPaso",
+        "to": "Dallas",
+        "percentage": 20,
+        "amplifiers": [
+            "FortHancock",
+            "EagleFlat",
+            "Boracho",
+            "Toyah",
+            "Wickett",
+            "Odessa_0",
+            "Morita",
+            "ColoradoCity",
+            "Merkel",
+            "Putnam",
+            "Gordon",
+            "WillowPark",
+            "Dallas_0"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L17_229_244",
+                "slices": "229-244"
+            },
+            {
+                "demand": "Demand_L17_277_280",
+                "slices": "277-280"
+            },
+            {
+                "demand": "Demand_L17_383_454",
+                "slices": "383-454"
+            },
+            {
+                "demand": "Demand_L17_574_633",
+                "slices": "574-633"
+            }
+        ]
+    },
+    {
+        "id": "L18",
+        "from": "ElPaso",
+        "to": "Houston",
+        "percentage": 10,
+        "amplifiers": [
+            "FortHancock",
+            "EagleFlat",
+            "Boracho",
+            "Balmorhea",
+            "FortStockton",
+            "Bakersfield",
+            "FortLancaster",
+            "AllisonRanch",
+            "FortMcKavett",
+            "Streeter",
+            "Llano",
+            "Lakeway",
+            "Bastrop",
+            "Ellinger",
+            "Brookshire",
+            "Houston_0_1"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L18_0_19",
+                "slices": "0-19"
+            },
+            {
+                "demand": "Demand_L18_71_74",
+                "slices": "71-74"
+            },
+            {
+                "demand": "Demand_L18_506_553",
+                "slices": "506-553"
+            },
+            {
+                "demand": "Demand_L18_695_698",
+                "slices": "695-698"
+            }
+        ]
+    },
+    {
+        "id": "L19",
+        "from": "ElPaso",
+        "to": "Phoenix",
+        "percentage": 20,
+        "amplifiers": [
+            "LasCruces",
+            "Akela",
+            "Wilna",
+            "Lordsburg",
+            "Bowie",
+            "Dragoon",
+            "Tucson",
+            "RedRock",
+            "Florence",
+            "Phoenix_0"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L19_141_148",
+                "slices": "141-148"
+            },
+            {
+                "demand": "Demand_L19_235_254",
+                "slices": "235-254"
+            },
+            {
+                "demand": "Demand_L19_348_351",
+                "slices": "348-351"
+            },
+            {
+                "demand": "Demand_L19_367_386",
+                "slices": "367-386"
+            },
+            {
+                "demand": "Demand_L19_430_457",
+                "slices": "430-457"
+            },
+            {
+                "demand": "Demand_L19_463_510",
+                "slices": "463-510"
+            },
+            {
+                "demand": "Demand_L19_742_765",
+                "slices": "742-765"
+            }
+        ]
+    },
+    {
+        "id": "L21",
+        "from": "Dallas",
+        "to": "Houston",
+        "percentage": 16,
+        "amplifiers": [
+            "Corsicana",
+            "MarshySprings",
+            "Madisonville",
+            "Willis",
+            "Houston_0"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L21_233_256",
+                "slices": "233-256"
+            },
+            {
+                "demand": "Demand_L21_314_377",
+                "slices": "314-377"
+            },
+            {
+                "demand": "Demand_L21_447_450",
+                "slices": "447-450"
+            },
+            {
+                "demand": "Demand_L21_501_512",
+                "slices": "501-512"
+            },
+            {
+                "demand": "Demand_L21_679_690",
+                "slices": "679-690"
+            },
+            {
+                "demand": "Demand_L21_728_735",
+                "slices": "728-735"
+            }
+        ]
+    },
+    {
+        "id": "L22",
+        "from": "Dallas",
+        "to": "OklahomaCity",
+        "percentage": 17,
+        "amplifiers": [
+            "Dallas",
+            "Frisco",
+            "Gainesville",
+            "Ardmore",
+            "Maysville"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L22_64_83",
+                "slices": "64-83"
+            },
+            {
+                "demand": "Demand_L22_91_114",
+                "slices": "91-114"
+            },
+            {
+                "demand": "Demand_L22_124_127",
+                "slices": "124-127"
+            },
+            {
+                "demand": "Demand_L22_164_171",
+                "slices": "164-171"
+            },
+            {
+                "demand": "Demand_L22_343_346",
+                "slices": "343-346"
+            },
+            {
+                "demand": "Demand_L22_380_383",
+                "slices": "380-383"
+            },
+            {
+                "demand": "Demand_L22_402_441",
+                "slices": "402-441"
+            },
+            {
+                "demand": "Demand_L22_530_549",
+                "slices": "530-549"
+            },
+            {
+                "demand": "Demand_L22_745_752",
+                "slices": "745-752"
+            }
+        ]
+    },
+    {
+        "id": "L23",
+        "from": "Dallas",
+        "to": "Denver",
+        "percentage": 10,
+        "amplifiers": [
+            "Rhome",
+            "Bowie_0",
+            "WichitaFalls",
+            "Vernon",
+            "Kirkland",
+            "Hedley",
+            "Claude",
+            "Marsh",
+            "Dalhart",
+            "Clayton",
+            "Capulin",
+            "Trinidad",
+            "Lascar",
+            "Wigwam",
+            "Larkspur",
+            "Denver_0"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L23_345_348",
+                "slices": "345-348"
+            },
+            {
+                "demand": "Demand_L23_548_599",
+                "slices": "548-599"
+            },
+            {
+                "demand": "Demand_L23_741_760",
+                "slices": "741-760"
+            }
+        ]
+    },
+    {
+        "id": "L24",
+        "from": "Dallas",
+        "to": "Memphis",
+        "percentage": 15,
+        "amplifiers": [
+            "Greenville",
+            "MountVernon",
+            "NewBoston",
+            "Hope",
+            "GumSprings",
+            "Benton",
+            "Carlisle",
+            "Goodwin",
+            "Memphis"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L24_46_65",
+                "slices": "46-65"
+            },
+            {
+                "demand": "Demand_L24_298_301",
+                "slices": "298-301"
+            },
+            {
+                "demand": "Demand_L24_315_318",
+                "slices": "315-318"
+            },
+            {
+                "demand": "Demand_L24_327_338",
+                "slices": "327-338"
+            },
+            {
+                "demand": "Demand_L24_380_407",
+                "slices": "380-407"
+            },
+            {
+                "demand": "Demand_L24_579_586",
+                "slices": "579-586"
+            },
+            {
+                "demand": "Demand_L24_712_751",
+                "slices": "712-751"
+            }
+        ]
+    },
+    {
+        "id": "L27",
+        "from": "Houston",
+        "to": "NewOrleans",
+        "percentage": 29,
+        "amplifiers": [
+            "Houston",
+            "Dayton",
+            "Galloway",
+            "Vinton",
+            "Welsh",
+            "Lafayette",
+            "BatonRouge"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L27_41_88",
+                "slices": "41-88"
+            },
+            {
+                "demand": "Demand_L27_117_188",
+                "slices": "117-188"
+            },
+            {
+                "demand": "Demand_L27_225_240",
+                "slices": "225-240"
+            },
+            {
+                "demand": "Demand_L27_360_367",
+                "slices": "360-367"
+            },
+            {
+                "demand": "Demand_L27_414_441",
+                "slices": "414-441"
+            },
+            {
+                "demand": "Demand_L27_481_504",
+                "slices": "481-504"
+            },
+            {
+                "demand": "Demand_L27_627_646",
+                "slices": "627-646"
+            },
+            {
+                "demand": "Demand_L27_729_736",
+                "slices": "729-736"
+            }
+        ]
+    },
+    {
+        "id": "L29",
+        "from": "OklahomaCity",
+        "to": "KansasCity",
+        "percentage": 13,
+        "amplifiers": [
+            "OklahomaCity",
+            "Stroud",
+            "Tulsa",
+            "Bartlesville",
+            "Sycamore",
+            "Iola",
+            "Osawatomie"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L29_122_129",
+                "slices": "122-129"
+            },
+            {
+                "demand": "Demand_L29_187_214",
+                "slices": "187-214"
+            },
+            {
+                "demand": "Demand_L29_611_674",
+                "slices": "611-674"
+            }
+        ]
+    },
+    {
+        "id": "L30",
+        "from": "Minneapolis",
+        "to": "KansasCity",
+        "percentage": 23,
+        "amplifiers": [
+            "Minneapolis",
+            "Medford",
+            "Emmons",
+            "Belmond",
+            "StoryCity",
+            "DesMoines",
+            "VanWert",
+            "Bethany",
+            "Cameron"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L30_147_218",
+                "slices": "147-218"
+            },
+            {
+                "demand": "Demand_L30_239_250",
+                "slices": "239-250"
+            },
+            {
+                "demand": "Demand_L30_270_357",
+                "slices": "270-357"
+            },
+            {
+                "demand": "Demand_L30_452_455",
+                "slices": "452-455"
+            }
+        ]
+    },
+    {
+        "id": "L31",
+        "from": "Minneapolis",
+        "to": "Chicago",
+        "percentage": 28,
+        "amplifiers": [
+            "Salem",
+            "Arcadia",
+            "SpringBankPark",
+            "Reedsburg",
+            "Madison",
+            "Beloit",
+            "Algonquin",
+            "Chicago_0"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L31_6_9",
+                "slices": "6-9"
+            },
+            {
+                "demand": "Demand_L31_198_225",
+                "slices": "198-225"
+            },
+            {
+                "demand": "Demand_L31_264_279",
+                "slices": "264-279"
+            },
+            {
+                "demand": "Demand_L31_287_326",
+                "slices": "287-326"
+            },
+            {
+                "demand": "Demand_L31_330_337",
+                "slices": "330-337"
+            },
+            {
+                "demand": "Demand_L31_355_362",
+                "slices": "355-362"
+            },
+            {
+                "demand": "Demand_L31_406_421",
+                "slices": "406-421"
+            },
+            {
+                "demand": "Demand_L31_475_530",
+                "slices": "475-530"
+            },
+            {
+                "demand": "Demand_L31_695_734",
+                "slices": "695-734"
+            }
+        ]
+    },
+    {
+        "id": "L32",
+        "from": "Minneapolis",
+        "to": "Winnipeg",
+        "percentage": 10,
+        "amplifiers": [
+            "SaintCloud",
+            "SaukCentre",
+            "Evansville",
+            "RothsayMobileHomePark",
+            "BooktreePark",
+            "Reynolds",
+            "Minto",
+            "SaintVincent",
+            "SainteAgathe",
+            "Winnipeg"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L32_32_75",
+                "slices": "32-75"
+            },
+            {
+                "demand": "Demand_L32_248_275",
+                "slices": "248-275"
+            },
+            {
+                "demand": "Demand_L32_639_642",
+                "slices": "639-642"
+            }
+        ]
+    },
+    {
+        "id": "L35",
+        "from": "KansasCity",
+        "to": "Denver",
+        "percentage": 10,
+        "amplifiers": [
+            "KansasCity",
+            "Lawrence",
+            "MapleHill",
+            "JunctionCity",
+            "Salina",
+            "Wilson",
+            "Hays",
+            "Collyer",
+            "Oakley",
+            "Goodland",
+            "Bethune",
+            "Arriba",
+            "DeerTrail"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L35_22_85",
+                "slices": "22-85"
+            },
+            {
+                "demand": "Demand_L35_232_243",
+                "slices": "232-243"
+            }
+        ]
+    },
+    {
+        "id": "L36",
+        "from": "KansasCity",
+        "to": "StLouis",
+        "percentage": 27,
+        "amplifiers": [
+            "KansasCity_0",
+            "Concordia",
+            "Boonville",
+            "KingdomCity",
+            "Warrenton"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L36_101_104",
+                "slices": "101-104"
+            },
+            {
+                "demand": "Demand_L36_198_281",
+                "slices": "198-281"
+            },
+            {
+                "demand": "Demand_L36_466_469",
+                "slices": "466-469"
+            },
+            {
+                "demand": "Demand_L36_542_545",
+                "slices": "542-545"
+            },
+            {
+                "demand": "Demand_L36_585_636",
+                "slices": "585-636"
+            },
+            {
+                "demand": "Demand_L36_643_702",
+                "slices": "643-702"
+            }
+        ]
+    },
+    {
+        "id": "L41",
+        "from": "Chicago",
+        "to": "Indianapolis",
+        "percentage": 11,
+        "amplifiers": [
+            "Chicago",
+            "Lowell",
+            "Rensselaer",
+            "Lafayette_0"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L41_51_78",
+                "slices": "51-78"
+            },
+            {
+                "demand": "Demand_L41_283_322",
+                "slices": "283-322"
+            },
+            {
+                "demand": "Demand_L41_350_365",
+                "slices": "350-365"
+            }
+        ]
+    },
+    {
+        "id": "L42",
+        "from": "Chicago",
+        "to": "Detroit",
+        "percentage": 30,
+        "amplifiers": [
+            "Hebron",
+            "Lakeville",
+            "Lagrange",
+            "Hillsdale",
+            "Saline",
+            "Detroit_0"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L42_30_49",
+                "slices": "30-49"
+            },
+            {
+                "demand": "Demand_L42_180_183",
+                "slices": "180-183"
+            },
+            {
+                "demand": "Demand_L42_225_252",
+                "slices": "225-252"
+            },
+            {
+                "demand": "Demand_L42_267_286",
+                "slices": "267-286"
+            },
+            {
+                "demand": "Demand_L42_552_619",
+                "slices": "552-619"
+            },
+            {
+                "demand": "Demand_L42_672_763",
+                "slices": "672-763"
+            }
+        ]
+    },
+    {
+        "id": "L43",
+        "from": "Chicago",
+        "to": "StLouis",
+        "percentage": 12,
+        "amplifiers": [
+            "Manteno",
+            "Buckley",
+            "Monticello",
+            "Taylorville",
+            "Litchfield",
+            "StLouis"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L43_132_215",
+                "slices": "132-215"
+            },
+            {
+                "demand": "Demand_L43_745_752",
+                "slices": "745-752"
+            }
+        ]
+    },
+    {
+        "id": "L45",
+        "from": "Indianapolis",
+        "to": "StLouis",
+        "percentage": 22,
+        "amplifiers": [
+            "Knightsville",
+            "Martinsville",
+            "Altamont",
+            "Greenville_0",
+            "StLouis_0"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L45_31_34",
+                "slices": "31-34"
+            },
+            {
+                "demand": "Demand_L45_200_263",
+                "slices": "200-263"
+            },
+            {
+                "demand": "Demand_L45_519_570",
+                "slices": "519-570"
+            },
+            {
+                "demand": "Demand_L45_638_641",
+                "slices": "638-641"
+            },
+            {
+                "demand": "Demand_L45_713_756",
+                "slices": "713-756"
+            }
+        ]
+    },
+    {
+        "id": "L46",
+        "from": "Indianapolis",
+        "to": "Nashville",
+        "percentage": 10,
+        "amplifiers": [
+            "Bloominton",
+            "Hardinsburg",
+            "Irvington",
+            "Brownsville",
+            "Franklin",
+            "Nashville_0"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L46_4_11",
+                "slices": "4-11"
+            },
+            {
+                "demand": "Demand_L46_201_224",
+                "slices": "201-224"
+            },
+            {
+                "demand": "Demand_L46_435_458",
+                "slices": "435-458"
+            },
+            {
+                "demand": "Demand_L46_589_600",
+                "slices": "589-600"
+            },
+            {
+                "demand": "Demand_L46_679_686",
+                "slices": "679-686"
+            }
+        ]
+    },
+    {
+        "id": "L47",
+        "from": "Indianapolis",
+        "to": "Cincinnati",
+        "percentage": 19,
+        "amplifiers": [
+            "Greensburg",
+            "Cincinnati"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L47_33_52",
+                "slices": "33-52"
+            },
+            {
+                "demand": "Demand_L47_283_306",
+                "slices": "283-306"
+            },
+            {
+                "demand": "Demand_L47_317_324",
+                "slices": "317-324"
+            },
+            {
+                "demand": "Demand_L47_363_410",
+                "slices": "363-410"
+            },
+            {
+                "demand": "Demand_L47_679_722",
+                "slices": "679-722"
+            }
+        ]
+    },
+    {
+        "id": "L49",
+        "from": "Detroit",
+        "to": "Cleveland",
+        "percentage": 38,
+        "amplifiers": [
+            "PeleeIsland",
+            "Cleveland"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L49_75_78",
+                "slices": "75-78"
+            },
+            {
+                "demand": "Demand_L49_142_225",
+                "slices": "142-225"
+            },
+            {
+                "demand": "Demand_L49_350_353",
+                "slices": "350-353"
+            },
+            {
+                "demand": "Demand_L49_379_414",
+                "slices": "379-414"
+            },
+            {
+                "demand": "Demand_L49_440_455",
+                "slices": "440-455"
+            },
+            {
+                "demand": "Demand_L49_491_514",
+                "slices": "491-514"
+            },
+            {
+                "demand": "Demand_L49_543_550",
+                "slices": "543-550"
+            },
+            {
+                "demand": "Demand_L49_555_558",
+                "slices": "555-558"
+            },
+            {
+                "demand": "Demand_L49_595_674",
+                "slices": "595-674"
+            },
+            {
+                "demand": "Demand_L49_724_755",
+                "slices": "724-755"
+            }
+        ]
+    },
+    {
+        "id": "L50",
+        "from": "Detroit",
+        "to": "Toronto",
+        "percentage": 19,
+        "amplifiers": [
+            "Detroit",
+            "Chatham",
+            "Dutton",
+            "Woodstock",
+            "Hamilton"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L50_22_37",
+                "slices": "22-37"
+            },
+            {
+                "demand": "Demand_L50_138_145",
+                "slices": "138-145"
+            },
+            {
+                "demand": "Demand_L50_314_317",
+                "slices": "314-317"
+            },
+            {
+                "demand": "Demand_L50_494_549",
+                "slices": "494-549"
+            },
+            {
+                "demand": "Demand_L50_627_678",
+                "slices": "627-678"
+            },
+            {
+                "demand": "Demand_L50_708_715",
+                "slices": "708-715"
+            }
+        ]
+    },
+    {
+        "id": "L54",
+        "from": "StLouis",
+        "to": "Memphis",
+        "percentage": 13,
+        "amplifiers": [
+            "BlonneTerre",
+            "DesArc",
+            "Parks",
+            "Leachville",
+            "Memphis_0"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L54_48_83",
+                "slices": "48-83"
+            },
+            {
+                "demand": "Demand_L54_276_287",
+                "slices": "276-287"
+            },
+            {
+                "demand": "Demand_L54_559_610",
+                "slices": "559-610"
+            }
+        ]
+    },
+    {
+        "id": "L56",
+        "from": "Nashville",
+        "to": "Charlotte",
+        "percentage": 10,
+        "amplifiers": [
+            "Dowelltown",
+            "Crossville",
+            "OakRidge",
+            "Sevierville",
+            "HotSprings",
+            "Hendersonville",
+            "Shelby",
+            "Charlotte"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L56_293_312",
+                "slices": "293-312"
+            },
+            {
+                "demand": "Demand_L56_361_364",
+                "slices": "361-364"
+            },
+            {
+                "demand": "Demand_L56_420_423",
+                "slices": "420-423"
+            },
+            {
+                "demand": "Demand_L56_438_441",
+                "slices": "438-441"
+            },
+            {
+                "demand": "Demand_L56_691_714",
+                "slices": "691-714"
+            },
+            {
+                "demand": "Demand_L56_744_763",
+                "slices": "744-763"
+            }
+        ]
+    },
+    {
+        "id": "L57",
+        "from": "Nashville",
+        "to": "Atlanta",
+        "percentage": 10,
+        "amplifiers": [
+            "Nashville",
+            "Murfreesboro",
+            "EstillSprings",
+            "Trenton",
+            "Adairsville"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L57_72_75",
+                "slices": "72-75"
+            },
+            {
+                "demand": "Demand_L57_437_480",
+                "slices": "437-480"
+            },
+            {
+                "demand": "Demand_L57_668_671",
+                "slices": "668-671"
+            },
+            {
+                "demand": "Demand_L57_679_698",
+                "slices": "679-698"
+            },
+            {
+                "demand": "Demand_L57_704_707",
+                "slices": "704-707"
+            }
+        ]
+    },
+    {
+        "id": "L58",
+        "from": "Nashville",
+        "to": "Memphis",
+        "percentage": 10,
+        "amplifiers": [
+            "SaltLick",
+            "Lexington",
+            "Eurekaton",
+            "Memphis"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L58_66_125",
+                "slices": "66-125"
+            },
+            {
+                "demand": "Demand_L58_477_484",
+                "slices": "477-484"
+            },
+            {
+                "demand": "Demand_L58_681_684",
+                "slices": "681-684"
+            },
+            {
+                "demand": "Demand_L58_704_707",
+                "slices": "704-707"
+            }
+        ]
+    },
+    {
+        "id": "L60",
+        "from": "Cleveland",
+        "to": "NewYork",
+        "percentage": 35,
+        "amplifiers": [
+            "Warrenton_0",
+            "Clintonville",
+            "Brookville",
+            "Clearfield",
+            "Milesburg",
+            "Wlliamsport",
+            "Hunlock",
+            "Stroudsburg",
+            "Dover",
+            "NewYork_0"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L60_15_82",
+                "slices": "15-82"
+            },
+            {
+                "demand": "Demand_L60_148_155",
+                "slices": "148-155"
+            },
+            {
+                "demand": "Demand_L60_250_309",
+                "slices": "250-309"
+            },
+            {
+                "demand": "Demand_L60_385_468",
+                "slices": "385-468"
+            },
+            {
+                "demand": "Demand_L60_514_557",
+                "slices": "514-557"
+            },
+            {
+                "demand": "Demand_L60_715_718",
+                "slices": "715-718"
+            }
+        ]
+    },
+    {
+        "id": "L61",
+        "from": "Cleveland",
+        "to": "Pittsburgh",
+        "percentage": 22,
+        "amplifiers": [
+            "Akron",
+            "Youngstown",
+            "BeaverFallas",
+            "Pittsburgh"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L61_120_175",
+                "slices": "120-175"
+            },
+            {
+                "demand": "Demand_L61_253_256",
+                "slices": "253-256"
+            },
+            {
+                "demand": "Demand_L61_506_597",
+                "slices": "506-597"
+            },
+            {
+                "demand": "Demand_L61_605_612",
+                "slices": "605-612"
+            },
+            {
+                "demand": "Demand_L61_620_623",
+                "slices": "620-623"
+            },
+            {
+                "demand": "Demand_L61_663_666",
+                "slices": "663-666"
+            }
+        ]
+    },
+    {
+        "id": "L62",
+        "from": "Cleveland",
+        "to": "Cincinnati",
+        "percentage": 25,
+        "amplifiers": [
+            "Polk",
+            "MountGilead",
+            "Columbus",
+            "Springfield",
+            "Franklin_0",
+            "Cincinnati_0"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L62_71_122",
+                "slices": "71-122"
+            },
+            {
+                "demand": "Demand_L62_329_336",
+                "slices": "329-336"
+            },
+            {
+                "demand": "Demand_L62_424_495",
+                "slices": "424-495"
+            },
+            {
+                "demand": "Demand_L62_576_595",
+                "slices": "576-595"
+            },
+            {
+                "demand": "Demand_L62_657_696",
+                "slices": "657-696"
+            }
+        ]
+    },
+    {
+        "id": "L64",
+        "from": "NewYork",
+        "to": "Boston",
+        "percentage": 24,
+        "amplifiers": [
+            "Stamford",
+            "Waterbury",
+            "Willington",
+            "Worcester",
+            "Boston"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L64_51_90",
+                "slices": "51-90"
+            },
+            {
+                "demand": "Demand_L64_132_175",
+                "slices": "132-175"
+            },
+            {
+                "demand": "Demand_L64_281_284",
+                "slices": "281-284"
+            },
+            {
+                "demand": "Demand_L64_419_502",
+                "slices": "419-502"
+            },
+            {
+                "demand": "Demand_L64_604_611",
+                "slices": "604-611"
+            },
+            {
+                "demand": "Demand_L64_695_698",
+                "slices": "695-698"
+            }
+        ]
+    },
+    {
+        "id": "L65",
+        "from": "NewYork",
+        "to": "Philadelphia",
+        "percentage": 18,
+        "amplifiers": [
+            "NewYork",
+            "NewBrunswick"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L65_1_8",
+                "slices": "1-8"
+            },
+            {
+                "demand": "Demand_L65_63_78",
+                "slices": "63-78"
+            },
+            {
+                "demand": "Demand_L65_115_174",
+                "slices": "115-174"
+            },
+            {
+                "demand": "Demand_L65_241_244",
+                "slices": "241-244"
+            },
+            {
+                "demand": "Demand_L65_403_438",
+                "slices": "403-438"
+            },
+            {
+                "demand": "Demand_L65_666_677",
+                "slices": "666-677"
+            },
+            {
+                "demand": "Demand_L65_762_765",
+                "slices": "762-765"
+            }
+        ]
+    },
+    {
+        "id": "L66",
+        "from": "NewYork",
+        "to": "Toronto",
+        "percentage": 25,
+        "amplifiers": [
+            "Allamuchy",
+            "SpringBrook",
+            "Hallstead",
+            "Cortland",
+            "Conquest",
+            "Rochester",
+            "Middleport",
+            "St.Catharines",
+            "Hamilton_0",
+            "Toronto"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L66_18_21",
+                "slices": "18-21"
+            },
+            {
+                "demand": "Demand_L66_63_70",
+                "slices": "63-70"
+            },
+            {
+                "demand": "Demand_L66_164_183",
+                "slices": "164-183"
+            },
+            {
+                "demand": "Demand_L66_459_498",
+                "slices": "459-498"
+            },
+            {
+                "demand": "Demand_L66_543_602",
+                "slices": "543-602"
+            },
+            {
+                "demand": "Demand_L66_695_754",
+                "slices": "695-754"
+            }
+        ]
+    },
+    {
+        "id": "L67",
+        "from": "Montreal",
+        "to": "Boston",
+        "percentage": 28,
+        "amplifiers": [
+            "Montreal",
+            "Granby",
+            "Coventry",
+            "Franconia",
+            "Danbury",
+            "Manchester"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L67_140_143",
+                "slices": "140-143"
+            },
+            {
+                "demand": "Demand_L67_189_240",
+                "slices": "189-240"
+            },
+            {
+                "demand": "Demand_L67_303_326",
+                "slices": "303-326"
+            },
+            {
+                "demand": "Demand_L67_367_394",
+                "slices": "367-394"
+            },
+            {
+                "demand": "Demand_L67_489_500",
+                "slices": "489-500"
+            },
+            {
+                "demand": "Demand_L67_554_557",
+                "slices": "554-557"
+            },
+            {
+                "demand": "Demand_L67_622_709",
+                "slices": "622-709"
+            },
+            {
+                "demand": "Demand_L67_713_716",
+                "slices": "713-716"
+            }
+        ]
+    },
+    {
+        "id": "L68",
+        "from": "Montreal",
+        "to": "Toronto",
+        "percentage": 21,
+        "amplifiers": [
+            "Brainsville",
+            "Morrisburg",
+            "Mallorytown",
+            "Odessa",
+            "QuinteWest",
+            "Newtonville",
+            "Toronto_0"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L68_213_228",
+                "slices": "213-228"
+            },
+            {
+                "demand": "Demand_L68_361_368",
+                "slices": "361-368"
+            },
+            {
+                "demand": "Demand_L68_441_524",
+                "slices": "441-524"
+            },
+            {
+                "demand": "Demand_L68_644_695",
+                "slices": "644-695"
+            }
+        ]
+    },
+    {
+        "id": "L70",
+        "from": "Charlotte",
+        "to": "Atlanta",
+        "percentage": 25,
+        "amplifiers": [
+            "Gaffney",
+            "Greenville_0_1",
+            "Montevideo",
+            "Athens",
+            "Atlanta"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L70_161_168",
+                "slices": "161-168"
+            },
+            {
+                "demand": "Demand_L70_201_272",
+                "slices": "201-272"
+            },
+            {
+                "demand": "Demand_L70_334_365",
+                "slices": "334-365"
+            },
+            {
+                "demand": "Demand_L70_446_477",
+                "slices": "446-477"
+            },
+            {
+                "demand": "Demand_L70_510_553",
+                "slices": "510-553"
+            },
+            {
+                "demand": "Demand_L70_758_761",
+                "slices": "758-761"
+            }
+        ]
+    },
+    {
+        "id": "L71",
+        "from": "Charlotte",
+        "to": "WashingtonDC",
+        "percentage": 35,
+        "amplifiers": [
+            "Lexington_0",
+            "Reidsville",
+            "Gretna",
+            "Appomattox",
+            "Palmyra",
+            "Culpeper",
+            "LintonHall",
+            "WashingtonDC_0"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L71_39_78",
+                "slices": "39-78"
+            },
+            {
+                "demand": "Demand_L71_208_299",
+                "slices": "208-299"
+            },
+            {
+                "demand": "Demand_L71_379_402",
+                "slices": "379-402"
+            },
+            {
+                "demand": "Demand_L71_459_478",
+                "slices": "459-478"
+            },
+            {
+                "demand": "Demand_L71_500_503",
+                "slices": "500-503"
+            },
+            {
+                "demand": "Demand_L71_534_597",
+                "slices": "534-597"
+            },
+            {
+                "demand": "Demand_L71_650_653",
+                "slices": "650-653"
+            },
+            {
+                "demand": "Demand_L71_678_697",
+                "slices": "678-697"
+            }
+        ]
+    },
+    {
+        "id": "L72",
+        "from": "Charlotte",
+        "to": "Tampa",
+        "percentage": 25,
+        "amplifiers": [
+            "GreatFalls",
+            "Columbia",
+            "Denmark",
+            "Scotia",
+            "Savannah",
+            "Ardick",
+            "Kingsland",
+            "ChimneyLakes",
+            "Gainesville_0",
+            "Belleview",
+            "DadeCity",
+            "Tampa"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L72_309_344",
+                "slices": "309-344"
+            },
+            {
+                "demand": "Demand_L72_460_467",
+                "slices": "460-467"
+            },
+            {
+                "demand": "Demand_L72_475_502",
+                "slices": "475-502"
+            },
+            {
+                "demand": "Demand_L72_518_569",
+                "slices": "518-569"
+            },
+            {
+                "demand": "Demand_L72_591_658",
+                "slices": "591-658"
+            }
+        ]
+    },
+    {
+        "id": "L74",
+        "from": "NewOrleans",
+        "to": "Atlanta",
+        "percentage": 16,
+        "amplifiers": [
+            "StennisInternationalAirport",
+            "FortBayouEstates",
+            "Mobile",
+            "Perdido",
+            "Evergreen",
+            "FortDeposit",
+            "Shorter",
+            "PineGrove",
+            "Moreland",
+            "Atlanta_0"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L74_434_509",
+                "slices": "434-509"
+            },
+            {
+                "demand": "Demand_L74_570_593",
+                "slices": "570-593"
+            },
+            {
+                "demand": "Demand_L74_643_646",
+                "slices": "643-646"
+            },
+            {
+                "demand": "Demand_L74_669_688",
+                "slices": "669-688"
+            }
+        ]
+    },
+    {
+        "id": "L75",
+        "from": "NewOrleans",
+        "to": "Miami",
+        "percentage": 21,
+        "amplifiers": [
+            "StennisInternationalAirport",
+            "MartinBluff",
+            "Creola",
+            "Molino",
+            "Crestview",
+            "Caryville",
+            "GrandRidge",
+            "Tallahassee",
+            "Perry",
+            "CrossCity",
+            "Gainesville_0_1",
+            "Belleview_0",
+            "TigerIsland",
+            "Frostproof",
+            "Archbold",
+            "SouthClewiston",
+            "BoyntonBeach",
+            "Miami"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L75_191_266",
+                "slices": "191-266"
+            },
+            {
+                "demand": "Demand_L75_331_334",
+                "slices": "331-334"
+            },
+            {
+                "demand": "Demand_L75_514_593",
+                "slices": "514-593"
+            }
+        ]
+    },
+    {
+        "id": "L76",
+        "from": "NewOrleans",
+        "to": "Memphis",
+        "percentage": 22,
+        "amplifiers": [
+            "NewOrleans",
+            "BatonRouge",
+            "Kentwood",
+            "Brookhaven",
+            "Jackson",
+            "Goodman",
+            "DuckHill",
+            "Batesville"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L76_12_51",
+                "slices": "12-51"
+            },
+            {
+                "demand": "Demand_L76_88_95",
+                "slices": "88-95"
+            },
+            {
+                "demand": "Demand_L76_245_256",
+                "slices": "245-256"
+            },
+            {
+                "demand": "Demand_L76_466_517",
+                "slices": "466-517"
+            },
+            {
+                "demand": "Demand_L76_650_705",
+                "slices": "650-705"
+            }
+        ]
+    },
+    {
+        "id": "L82",
+        "from": "Atlanta",
+        "to": "Tampa",
+        "percentage": 24,
+        "amplifiers": [
+            "WeldonCrossroads",
+            "WarnerRobins",
+            "Cordele",
+            "Tifton",
+            "Valdosta",
+            "Wellborn",
+            "Gainesville_0",
+            "Belleview",
+            "DadeCity",
+            "Tampa"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L82_18_57",
+                "slices": "18-57"
+            },
+            {
+                "demand": "Demand_L82_305_328",
+                "slices": "305-328"
+            },
+            {
+                "demand": "Demand_L82_372_403",
+                "slices": "372-403"
+            },
+            {
+                "demand": "Demand_L82_442_461",
+                "slices": "442-461"
+            },
+            {
+                "demand": "Demand_L82_608_623",
+                "slices": "608-623"
+            },
+            {
+                "demand": "Demand_L82_633_656",
+                "slices": "633-656"
+            },
+            {
+                "demand": "Demand_L82_687_706",
+                "slices": "687-706"
+            },
+            {
+                "demand": "Demand_L82_754_761",
+                "slices": "754-761"
+            }
+        ]
+    },
+    {
+        "id": "L84",
+        "from": "Miami",
+        "to": "Tampa",
+        "percentage": 12,
+        "amplifiers": [
+            "BoyntonBeach",
+            "SouthClewiston",
+            "Archbold",
+            "Frostproof",
+            "Mulberry",
+            "Tampa_0"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L84_99_122",
+                "slices": "99-122"
+            },
+            {
+                "demand": "Demand_L84_201_224",
+                "slices": "201-224"
+            },
+            {
+                "demand": "Demand_L84_497_508",
+                "slices": "497-508"
+            },
+            {
+                "demand": "Demand_L84_650_681",
+                "slices": "650-681"
+            }
+        ]
+    },
+    {
+        "id": "L86",
+        "from": "WashingtonDC",
+        "to": "Philadelphia",
+        "percentage": 29,
+        "amplifiers": [
+            "Townson",
+            "Newark",
+            "Philadelphia"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L86_28_51",
+                "slices": "28-51"
+            },
+            {
+                "demand": "Demand_L86_60_127",
+                "slices": "60-127"
+            },
+            {
+                "demand": "Demand_L86_210_261",
+                "slices": "210-261"
+            },
+            {
+                "demand": "Demand_L86_309_344",
+                "slices": "309-344"
+            },
+            {
+                "demand": "Demand_L86_393_400",
+                "slices": "393-400"
+            },
+            {
+                "demand": "Demand_L86_531_566",
+                "slices": "531-566"
+            }
+        ]
+    },
+    {
+        "id": "L87",
+        "from": "WashingtonDC",
+        "to": "Pittsburgh",
+        "percentage": 10,
+        "amplifiers": [
+            "WashingtonDC",
+            "Leesburg",
+            "Winchester",
+            "Cumberland",
+            "SevenSprings"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L87_155_178",
+                "slices": "155-178"
+            },
+            {
+                "demand": "Demand_L87_279_314",
+                "slices": "279-314"
+            },
+            {
+                "demand": "Demand_L87_726_741",
+                "slices": "726-741"
+            }
+        ]
+    },
+    {
+        "id": "L105",
+        "from": "Winnipeg",
+        "to": "Calgary",
+        "percentage": 20,
+        "amplifiers": [
+            "PortagelaPrairie",
+            "Carberry",
+            "Alexander",
+            "Kirkella",
+            "Whitewood",
+            "Wolseley",
+            "Balgonie",
+            "Pasqua",
+            "Parkbeg",
+            "Herbert",
+            "Webb",
+            "Piapot",
+            "Walsh",
+            "Redcliff",
+            "Tilley",
+            "Bassano",
+            "Strathmore",
+            "Calgary_0"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L105_21_32",
+                "slices": "21-32"
+            },
+            {
+                "demand": "Demand_L105_234_257",
+                "slices": "234-257"
+            },
+            {
+                "demand": "Demand_L105_312_371",
+                "slices": "312-371"
+            },
+            {
+                "demand": "Demand_L105_655_710",
+                "slices": "655-710"
+            }
+        ]
+    },
+    {
+        "id": "L110",
+        "from": "Seattle",
+        "to": "Portland",
+        "percentage": 17,
+        "amplifiers": [
+            "Graham",
+            "Toledo",
+            "Woodland",
+            "Portland_0"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L110_36_79",
+                "slices": "36-79"
+            },
+            {
+                "demand": "Demand_L110_254_257",
+                "slices": "254-257"
+            },
+            {
+                "demand": "Demand_L110_517_520",
+                "slices": "517-520"
+            },
+            {
+                "demand": "Demand_L110_543_602",
+                "slices": "543-602"
+            },
+            {
+                "demand": "Demand_L110_711_730",
+                "slices": "711-730"
+            }
+        ]
+    },
+    {
+        "id": "L119",
+        "from": "Phoenix",
+        "to": "SanDiego",
+        "percentage": 10,
+        "amplifiers": [
+            "GilaBend",
+            "Dateland",
+            "Ligurta",
+            "EjidoYucatan",
+            "Progreso",
+            "ElHongo",
+            "SanDiego_0"
+        ],
+        "info": [
+            {
+                "demand": "Demand_L119_63_94",
+                "slices": "63-94"
+            },
+            {
+                "demand": "Demand_L119_376_407",
+                "slices": "376-407"
+            },
+            {
+                "demand": "Demand_L119_654_657",
+                "slices": "654-657"
+            },
+            {
+                "demand": "Demand_L119_700_703",
+                "slices": "700-703"
+            },
+            {
+                "demand": "Demand_L119_727_730",
+                "slices": "727-730"
+            }
+        ]
+    }
+];
+    const AVERAGELAT = 38.718205128205135;
+    const AVERAGELONG = -95.4820512820513;
+    const CHANNELS = [
+    {
+        "channel": "Demand_L0_307_334",
+        "links": [
+            "L0"
+        ]
+    },
+    {
+        "channel": "Demand_L0_750_753",
+        "links": [
+            "L0"
+        ]
+    },
+    {
+        "channel": "Demand_L0_410_429",
+        "links": [
+            "L0"
+        ]
+    },
+    {
+        "channel": "Demand_L0_102_125",
+        "links": [
+            "L0"
+        ]
+    },
+    {
+        "channel": "Demand_L1_164_179",
+        "links": [
+            "L1"
+        ]
+    },
+    {
+        "channel": "Demand_L1_366_441",
+        "links": [
+            "L1"
+        ]
+    },
+    {
+        "channel": "Demand_L1_635_682",
+        "links": [
+            "L1"
+        ]
+    },
+    {
+        "channel": "Demand_L1_463_478",
+        "links": [
+            "L1"
+        ]
+    },
+    {
+        "channel": "Demand_L1_550_593",
+        "links": [
+            "L1"
+        ]
+    },
+    {
+        "channel": "Demand_L1_502_509",
+        "links": [
+            "L1"
+        ]
+    },
+    {
+        "channel": "Demand_L2_268_291",
+        "links": [
+            "L2"
+        ]
+    },
+    {
+        "channel": "Demand_L2_606_625",
+        "links": [
+            "L2"
+        ]
+    },
+    {
+        "channel": "Demand_L2_322_357",
+        "links": [
+            "L2"
+        ]
+    },
+    {
+        "channel": "Demand_L2_438_441",
+        "links": [
+            "L2"
+        ]
+    },
+    {
+        "channel": "Demand_L3_655_686",
+        "links": [
+            "L3"
+        ]
+    },
+    {
+        "channel": "Demand_L3_312_351",
+        "links": [
+            "L3"
+        ]
+    },
+    {
+        "channel": "Demand_L3_564_567",
+        "links": [
+            "L3"
+        ]
+    },
+    {
+        "channel": "Demand_L4_728_739",
+        "links": [
+            "L4"
+        ]
+    },
+    {
+        "channel": "Demand_L4_487_582",
+        "links": [
+            "L4"
+        ]
+    },
+    {
+        "channel": "Demand_L4_400_419",
+        "links": [
+            "L4"
+        ]
+    },
+    {
+        "channel": "Demand_L4_82_121",
+        "links": [
+            "L4"
+        ]
+    },
+    {
+        "channel": "Demand_L4_263_298",
+        "links": [
+            "L4"
+        ]
+    },
+    {
+        "channel": "Demand_L4_149_168",
+        "links": [
+            "L4"
+        ]
+    },
+    {
+        "channel": "Demand_L4_439_442",
+        "links": [
+            "L4"
+        ]
+    },
+    {
+        "channel": "Demand_L4_29_32",
+        "links": [
+            "L4"
+        ]
+    },
+    {
+        "channel": "Demand_L6_20_39",
+        "links": [
+            "L6"
+        ]
+    },
+    {
+        "channel": "Demand_L6_43_122",
+        "links": [
+            "L6"
+        ]
+    },
+    {
+        "channel": "Demand_L6_756_759",
+        "links": [
+            "L6"
+        ]
+    },
+    {
+        "channel": "Demand_L6_747_750",
+        "links": [
+            "L6"
+        ]
+    },
+    {
+        "channel": "Demand_L7_725_740",
+        "links": [
+            "L7"
+        ]
+    },
+    {
+        "channel": "Demand_L7_497_560",
+        "links": [
+            "L7"
+        ]
+    },
+    {
+        "channel": "Demand_L7_202_241",
+        "links": [
+            "L7"
+        ]
+    },
+    {
+        "channel": "Demand_L7_332_343",
+        "links": [
+            "L7"
+        ]
+    },
+    {
+        "channel": "Demand_L7_432_443",
+        "links": [
+            "L7"
+        ]
+    },
+    {
+        "channel": "Demand_L9_560_639",
+        "links": [
+            "L9"
+        ]
+    },
+    {
+        "channel": "Demand_L9_400_451",
+        "links": [
+            "L9"
+        ]
+    },
+    {
+        "channel": "Demand_L9_67_86",
+        "links": [
+            "L9"
+        ]
+    },
+    {
+        "channel": "Demand_L9_542_553",
+        "links": [
+            "L9"
+        ]
+    },
+    {
+        "channel": "Demand_L9_50_61",
+        "links": [
+            "L9"
+        ]
+    },
+    {
+        "channel": "Demand_L10_464_511",
+        "links": [
+            "L10"
+        ]
+    },
+    {
+        "channel": "Demand_L10_297_304",
+        "links": [
+            "L10"
+        ]
+    },
+    {
+        "channel": "Demand_L10_272_283",
+        "links": [
+            "L10"
+        ]
+    },
+    {
+        "channel": "Demand_L10_564_571",
+        "links": [
+            "L10"
+        ]
+    },
+    {
+        "channel": "Demand_L11_572_615",
+        "links": [
+            "L11"
+        ]
+    },
+    {
+        "channel": "Demand_L11_515_522",
+        "links": [
+            "L11"
+        ]
+    },
+    {
+        "channel": "Demand_L11_17_24",
+        "links": [
+            "L11"
+        ]
+    },
+    {
+        "channel": "Demand_L11_760_763",
+        "links": [
+            "L11"
+        ]
+    },
+    {
+        "channel": "Demand_L11_731_742",
+        "links": [
+            "L11"
+        ]
+    },
+    {
+        "channel": "Demand_L13_406_425",
+        "links": [
+            "L13"
+        ]
+    },
+    {
+        "channel": "Demand_L13_95_162",
+        "links": [
+            "L13"
+        ]
+    },
+    {
+        "channel": "Demand_L13_324_347",
+        "links": [
+            "L13"
+        ]
+    },
+    {
+        "channel": "Demand_L13_747_758",
+        "links": [
+            "L13"
+        ]
+    },
+    {
+        "channel": "Demand_L13_450_473",
+        "links": [
+            "L13"
+        ]
+    },
+    {
+        "channel": "Demand_L13_723_726",
+        "links": [
+            "L13"
+        ]
+    },
+    {
+        "channel": "Demand_L14_472_551",
+        "links": [
+            "L14"
+        ]
+    },
+    {
+        "channel": "Demand_L14_117_148",
+        "links": [
+            "L14"
+        ]
+    },
+    {
+        "channel": "Demand_L14_58_97",
+        "links": [
+            "L14"
+        ]
+    },
+    {
+        "channel": "Demand_L14_164_207",
+        "links": [
+            "L14"
+        ]
+    },
+    {
+        "channel": "Demand_L14_582_613",
+        "links": [
+            "L14"
+        ]
+    },
+    {
+        "channel": "Demand_L14_245_260",
+        "links": [
+            "L14"
+        ]
+    },
+    {
+        "channel": "Demand_L14_618_629",
+        "links": [
+            "L14"
+        ]
+    },
+    {
+        "channel": "Demand_L14_300_303",
+        "links": [
+            "L14"
+        ]
+    },
+    {
+        "channel": "Demand_L15_57_136",
+        "links": [
+            "L15"
+        ]
+    },
+    {
+        "channel": "Demand_L15_379_450",
+        "links": [
+            "L15"
+        ]
+    },
+    {
+        "channel": "Demand_L15_538_553",
+        "links": [
+            "L15"
+        ]
+    },
+    {
+        "channel": "Demand_L16_656_715",
+        "links": [
+            "L16"
+        ]
+    },
+    {
+        "channel": "Demand_L16_225_292",
+        "links": [
+            "L16"
+        ]
+    },
+    {
+        "channel": "Demand_L16_432_443",
+        "links": [
+            "L16"
+        ]
+    },
+    {
+        "channel": "Demand_L16_135_138",
+        "links": [
+            "L16"
+        ]
+    },
+    {
+        "channel": "Demand_L17_574_633",
+        "links": [
+            "L17"
+        ]
+    },
+    {
+        "channel": "Demand_L17_383_454",
+        "links": [
+            "L17"
+        ]
+    },
+    {
+        "channel": "Demand_L17_229_244",
+        "links": [
+            "L17"
+        ]
+    },
+    {
+        "channel": "Demand_L17_277_280",
+        "links": [
+            "L17"
+        ]
+    },
+    {
+        "channel": "Demand_L18_506_553",
+        "links": [
+            "L18"
+        ]
+    },
+    {
+        "channel": "Demand_L18_0_19",
+        "links": [
+            "L18"
+        ]
+    },
+    {
+        "channel": "Demand_L18_695_698",
+        "links": [
+            "L18"
+        ]
+    },
+    {
+        "channel": "Demand_L18_71_74",
+        "links": [
+            "L18"
+        ]
+    },
+    {
+        "channel": "Demand_L19_141_148",
+        "links": [
+            "L19"
+        ]
+    },
+    {
+        "channel": "Demand_L19_742_765",
+        "links": [
+            "L19"
+        ]
+    },
+    {
+        "channel": "Demand_L19_463_510",
+        "links": [
+            "L19"
+        ]
+    },
+    {
+        "channel": "Demand_L19_367_386",
+        "links": [
+            "L19"
+        ]
+    },
+    {
+        "channel": "Demand_L19_430_457",
+        "links": [
+            "L19"
+        ]
+    },
+    {
+        "channel": "Demand_L19_235_254",
+        "links": [
+            "L19"
+        ]
+    },
+    {
+        "channel": "Demand_L19_348_351",
+        "links": [
+            "L19"
+        ]
+    },
+    {
+        "channel": "Demand_L21_501_512",
+        "links": [
+            "L21"
+        ]
+    },
+    {
+        "channel": "Demand_L21_314_377",
+        "links": [
+            "L21"
+        ]
+    },
+    {
+        "channel": "Demand_L21_679_690",
+        "links": [
+            "L21"
+        ]
+    },
+    {
+        "channel": "Demand_L21_233_256",
+        "links": [
+            "L21"
+        ]
+    },
+    {
+        "channel": "Demand_L21_728_735",
+        "links": [
+            "L21"
+        ]
+    },
+    {
+        "channel": "Demand_L21_447_450",
+        "links": [
+            "L21"
+        ]
+    },
+    {
+        "channel": "Demand_L22_64_83",
+        "links": [
+            "L22"
+        ]
+    },
+    {
+        "channel": "Demand_L22_530_549",
+        "links": [
+            "L22"
+        ]
+    },
+    {
+        "channel": "Demand_L22_402_441",
+        "links": [
+            "L22"
+        ]
+    },
+    {
+        "channel": "Demand_L22_745_752",
+        "links": [
+            "L22"
+        ]
+    },
+    {
+        "channel": "Demand_L22_91_114",
+        "links": [
+            "L22"
+        ]
+    },
+    {
+        "channel": "Demand_L22_343_346",
+        "links": [
+            "L22"
+        ]
+    },
+    {
+        "channel": "Demand_L22_380_383",
+        "links": [
+            "L22"
+        ]
+    },
+    {
+        "channel": "Demand_L22_164_171",
+        "links": [
+            "L22"
+        ]
+    },
+    {
+        "channel": "Demand_L22_124_127",
+        "links": [
+            "L22"
+        ]
+    },
+    {
+        "channel": "Demand_L23_548_599",
+        "links": [
+            "L23"
+        ]
+    },
+    {
+        "channel": "Demand_L23_741_760",
+        "links": [
+            "L23"
+        ]
+    },
+    {
+        "channel": "Demand_L23_345_348",
+        "links": [
+            "L23"
+        ]
+    },
+    {
+        "channel": "Demand_L24_380_407",
+        "links": [
+            "L24"
+        ]
+    },
+    {
+        "channel": "Demand_L24_712_751",
+        "links": [
+            "L24"
+        ]
+    },
+    {
+        "channel": "Demand_L24_46_65",
+        "links": [
+            "L24"
+        ]
+    },
+    {
+        "channel": "Demand_L24_298_301",
+        "links": [
+            "L24"
+        ]
+    },
+    {
+        "channel": "Demand_L24_327_338",
+        "links": [
+            "L24"
+        ]
+    },
+    {
+        "channel": "Demand_L24_315_318",
+        "links": [
+            "L24"
+        ]
+    },
+    {
+        "channel": "Demand_L24_579_586",
+        "links": [
+            "L24"
+        ]
+    },
+    {
+        "channel": "Demand_L27_360_367",
+        "links": [
+            "L27"
+        ]
+    },
+    {
+        "channel": "Demand_L27_225_240",
+        "links": [
+            "L27"
+        ]
+    },
+    {
+        "channel": "Demand_L27_41_88",
+        "links": [
+            "L27"
+        ]
+    },
+    {
+        "channel": "Demand_L27_627_646",
+        "links": [
+            "L27"
+        ]
+    },
+    {
+        "channel": "Demand_L27_117_188",
+        "links": [
+            "L27"
+        ]
+    },
+    {
+        "channel": "Demand_L27_481_504",
+        "links": [
+            "L27"
+        ]
+    },
+    {
+        "channel": "Demand_L27_414_441",
+        "links": [
+            "L27"
+        ]
+    },
+    {
+        "channel": "Demand_L27_729_736",
+        "links": [
+            "L27"
+        ]
+    },
+    {
+        "channel": "Demand_L29_611_674",
+        "links": [
+            "L29"
+        ]
+    },
+    {
+        "channel": "Demand_L29_187_214",
+        "links": [
+            "L29"
+        ]
+    },
+    {
+        "channel": "Demand_L29_122_129",
+        "links": [
+            "L29"
+        ]
+    },
+    {
+        "channel": "Demand_L30_270_357",
+        "links": [
+            "L30"
+        ]
+    },
+    {
+        "channel": "Demand_L30_239_250",
+        "links": [
+            "L30"
+        ]
+    },
+    {
+        "channel": "Demand_L30_147_218",
+        "links": [
+            "L30"
+        ]
+    },
+    {
+        "channel": "Demand_L30_452_455",
+        "links": [
+            "L30"
+        ]
+    },
+    {
+        "channel": "Demand_L31_406_421",
+        "links": [
+            "L31"
+        ]
+    },
+    {
+        "channel": "Demand_L31_198_225",
+        "links": [
+            "L31"
+        ]
+    },
+    {
+        "channel": "Demand_L31_287_326",
+        "links": [
+            "L31"
+        ]
+    },
+    {
+        "channel": "Demand_L31_475_530",
+        "links": [
+            "L31"
+        ]
+    },
+    {
+        "channel": "Demand_L31_695_734",
+        "links": [
+            "L31"
+        ]
+    },
+    {
+        "channel": "Demand_L31_355_362",
+        "links": [
+            "L31"
+        ]
+    },
+    {
+        "channel": "Demand_L31_330_337",
+        "links": [
+            "L31"
+        ]
+    },
+    {
+        "channel": "Demand_L31_6_9",
+        "links": [
+            "L31"
+        ]
+    },
+    {
+        "channel": "Demand_L31_264_279",
+        "links": [
+            "L31"
+        ]
+    },
+    {
+        "channel": "Demand_L32_639_642",
+        "links": [
+            "L32"
+        ]
+    },
+    {
+        "channel": "Demand_L32_32_75",
+        "links": [
+            "L32"
+        ]
+    },
+    {
+        "channel": "Demand_L32_248_275",
+        "links": [
+            "L32"
+        ]
+    },
+    {
+        "channel": "Demand_L35_232_243",
+        "links": [
+            "L35"
+        ]
+    },
+    {
+        "channel": "Demand_L35_22_85",
+        "links": [
+            "L35"
+        ]
+    },
+    {
+        "channel": "Demand_L36_585_636",
+        "links": [
+            "L36"
+        ]
+    },
+    {
+        "channel": "Demand_L36_198_281",
+        "links": [
+            "L36"
+        ]
+    },
+    {
+        "channel": "Demand_L36_643_702",
+        "links": [
+            "L36"
+        ]
+    },
+    {
+        "channel": "Demand_L36_101_104",
+        "links": [
+            "L36"
+        ]
+    },
+    {
+        "channel": "Demand_L36_466_469",
+        "links": [
+            "L36"
+        ]
+    },
+    {
+        "channel": "Demand_L36_542_545",
+        "links": [
+            "L36"
+        ]
+    },
+    {
+        "channel": "Demand_L41_51_78",
+        "links": [
+            "L41"
+        ]
+    },
+    {
+        "channel": "Demand_L41_283_322",
+        "links": [
+            "L41"
+        ]
+    },
+    {
+        "channel": "Demand_L41_350_365",
+        "links": [
+            "L41"
+        ]
+    },
+    {
+        "channel": "Demand_L42_225_252",
+        "links": [
+            "L42"
+        ]
+    },
+    {
+        "channel": "Demand_L42_672_763",
+        "links": [
+            "L42"
+        ]
+    },
+    {
+        "channel": "Demand_L42_30_49",
+        "links": [
+            "L42"
+        ]
+    },
+    {
+        "channel": "Demand_L42_552_619",
+        "links": [
+            "L42"
+        ]
+    },
+    {
+        "channel": "Demand_L42_180_183",
+        "links": [
+            "L42"
+        ]
+    },
+    {
+        "channel": "Demand_L42_267_286",
+        "links": [
+            "L42"
+        ]
+    },
+    {
+        "channel": "Demand_L43_745_752",
+        "links": [
+            "L43"
+        ]
+    },
+    {
+        "channel": "Demand_L43_132_215",
+        "links": [
+            "L43"
+        ]
+    },
+    {
+        "channel": "Demand_L45_713_756",
+        "links": [
+            "L45"
+        ]
+    },
+    {
+        "channel": "Demand_L45_200_263",
+        "links": [
+            "L45"
+        ]
+    },
+    {
+        "channel": "Demand_L45_519_570",
+        "links": [
+            "L45"
+        ]
+    },
+    {
+        "channel": "Demand_L45_31_34",
+        "links": [
+            "L45"
+        ]
+    },
+    {
+        "channel": "Demand_L45_638_641",
+        "links": [
+            "L45"
+        ]
+    },
+    {
+        "channel": "Demand_L46_201_224",
+        "links": [
+            "L46"
+        ]
+    },
+    {
+        "channel": "Demand_L46_435_458",
+        "links": [
+            "L46"
+        ]
+    },
+    {
+        "channel": "Demand_L46_589_600",
+        "links": [
+            "L46"
+        ]
+    },
+    {
+        "channel": "Demand_L46_4_11",
+        "links": [
+            "L46"
+        ]
+    },
+    {
+        "channel": "Demand_L46_679_686",
+        "links": [
+            "L46"
+        ]
+    },
+    {
+        "channel": "Demand_L47_679_722",
+        "links": [
+            "L47"
+        ]
+    },
+    {
+        "channel": "Demand_L47_33_52",
+        "links": [
+            "L47"
+        ]
+    },
+    {
+        "channel": "Demand_L47_363_410",
+        "links": [
+            "L47"
+        ]
+    },
+    {
+        "channel": "Demand_L47_283_306",
+        "links": [
+            "L47"
+        ]
+    },
+    {
+        "channel": "Demand_L47_317_324",
+        "links": [
+            "L47"
+        ]
+    },
+    {
+        "channel": "Demand_L49_350_353",
+        "links": [
+            "L49"
+        ]
+    },
+    {
+        "channel": "Demand_L49_142_225",
+        "links": [
+            "L49"
+        ]
+    },
+    {
+        "channel": "Demand_L49_724_755",
+        "links": [
+            "L49"
+        ]
+    },
+    {
+        "channel": "Demand_L49_491_514",
+        "links": [
+            "L49"
+        ]
+    },
+    {
+        "channel": "Demand_L49_595_674",
+        "links": [
+            "L49"
+        ]
+    },
+    {
+        "channel": "Demand_L49_379_414",
+        "links": [
+            "L49"
+        ]
+    },
+    {
+        "channel": "Demand_L49_543_550",
+        "links": [
+            "L49"
+        ]
+    },
+    {
+        "channel": "Demand_L49_440_455",
+        "links": [
+            "L49"
+        ]
+    },
+    {
+        "channel": "Demand_L49_75_78",
+        "links": [
+            "L49"
+        ]
+    },
+    {
+        "channel": "Demand_L49_555_558",
+        "links": [
+            "L49"
+        ]
+    },
+    {
+        "channel": "Demand_L50_314_317",
+        "links": [
+            "L50"
+        ]
+    },
+    {
+        "channel": "Demand_L50_22_37",
+        "links": [
+            "L50"
+        ]
+    },
+    {
+        "channel": "Demand_L50_627_678",
+        "links": [
+            "L50"
+        ]
+    },
+    {
+        "channel": "Demand_L50_494_549",
+        "links": [
+            "L50"
+        ]
+    },
+    {
+        "channel": "Demand_L50_708_715",
+        "links": [
+            "L50"
+        ]
+    },
+    {
+        "channel": "Demand_L50_138_145",
+        "links": [
+            "L50"
+        ]
+    },
+    {
+        "channel": "Demand_L54_559_610",
+        "links": [
+            "L54"
+        ]
+    },
+    {
+        "channel": "Demand_L54_48_83",
+        "links": [
+            "L54"
+        ]
+    },
+    {
+        "channel": "Demand_L54_276_287",
+        "links": [
+            "L54"
+        ]
+    },
+    {
+        "channel": "Demand_L56_293_312",
+        "links": [
+            "L56"
+        ]
+    },
+    {
+        "channel": "Demand_L56_420_423",
+        "links": [
+            "L56"
+        ]
+    },
+    {
+        "channel": "Demand_L56_691_714",
+        "links": [
+            "L56"
+        ]
+    },
+    {
+        "channel": "Demand_L56_361_364",
+        "links": [
+            "L56"
+        ]
+    },
+    {
+        "channel": "Demand_L56_744_763",
+        "links": [
+            "L56"
+        ]
+    },
+    {
+        "channel": "Demand_L56_438_441",
+        "links": [
+            "L56"
+        ]
+    },
+    {
+        "channel": "Demand_L57_437_480",
+        "links": [
+            "L57"
+        ]
+    },
+    {
+        "channel": "Demand_L57_679_698",
+        "links": [
+            "L57"
+        ]
+    },
+    {
+        "channel": "Demand_L57_704_707",
+        "links": [
+            "L57"
+        ]
+    },
+    {
+        "channel": "Demand_L57_72_75",
+        "links": [
+            "L57"
+        ]
+    },
+    {
+        "channel": "Demand_L57_668_671",
+        "links": [
+            "L57"
+        ]
+    },
+    {
+        "channel": "Demand_L58_66_125",
+        "links": [
+            "L58"
+        ]
+    },
+    {
+        "channel": "Demand_L58_477_484",
+        "links": [
+            "L58"
+        ]
+    },
+    {
+        "channel": "Demand_L58_704_707",
+        "links": [
+            "L58"
+        ]
+    },
+    {
+        "channel": "Demand_L58_681_684",
+        "links": [
+            "L58"
+        ]
+    },
+    {
+        "channel": "Demand_L60_514_557",
+        "links": [
+            "L60"
+        ]
+    },
+    {
+        "channel": "Demand_L60_385_468",
+        "links": [
+            "L60"
+        ]
+    },
+    {
+        "channel": "Demand_L60_15_82",
+        "links": [
+            "L60"
+        ]
+    },
+    {
+        "channel": "Demand_L60_148_155",
+        "links": [
+            "L60"
+        ]
+    },
+    {
+        "channel": "Demand_L60_250_309",
+        "links": [
+            "L60"
+        ]
+    },
+    {
+        "channel": "Demand_L60_715_718",
+        "links": [
+            "L60"
+        ]
+    },
+    {
+        "channel": "Demand_L61_120_175",
+        "links": [
+            "L61"
+        ]
+    },
+    {
+        "channel": "Demand_L61_506_597",
+        "links": [
+            "L61"
+        ]
+    },
+    {
+        "channel": "Demand_L61_620_623",
+        "links": [
+            "L61"
+        ]
+    },
+    {
+        "channel": "Demand_L61_663_666",
+        "links": [
+            "L61"
+        ]
+    },
+    {
+        "channel": "Demand_L61_253_256",
+        "links": [
+            "L61"
+        ]
+    },
+    {
+        "channel": "Demand_L61_605_612",
+        "links": [
+            "L61"
+        ]
+    },
+    {
+        "channel": "Demand_L62_71_122",
+        "links": [
+            "L62"
+        ]
+    },
+    {
+        "channel": "Demand_L62_657_696",
+        "links": [
+            "L62"
+        ]
+    },
+    {
+        "channel": "Demand_L62_424_495",
+        "links": [
+            "L62"
+        ]
+    },
+    {
+        "channel": "Demand_L62_576_595",
+        "links": [
+            "L62"
+        ]
+    },
+    {
+        "channel": "Demand_L62_329_336",
+        "links": [
+            "L62"
+        ]
+    },
+    {
+        "channel": "Demand_L64_419_502",
+        "links": [
+            "L64"
+        ]
+    },
+    {
+        "channel": "Demand_L64_132_175",
+        "links": [
+            "L64"
+        ]
+    },
+    {
+        "channel": "Demand_L64_51_90",
+        "links": [
+            "L64"
+        ]
+    },
+    {
+        "channel": "Demand_L64_604_611",
+        "links": [
+            "L64"
+        ]
+    },
+    {
+        "channel": "Demand_L64_281_284",
+        "links": [
+            "L64"
+        ]
+    },
+    {
+        "channel": "Demand_L64_695_698",
+        "links": [
+            "L64"
+        ]
+    },
+    {
+        "channel": "Demand_L65_403_438",
+        "links": [
+            "L65"
+        ]
+    },
+    {
+        "channel": "Demand_L65_63_78",
+        "links": [
+            "L65"
+        ]
+    },
+    {
+        "channel": "Demand_L65_115_174",
+        "links": [
+            "L65"
+        ]
+    },
+    {
+        "channel": "Demand_L65_666_677",
+        "links": [
+            "L65"
+        ]
+    },
+    {
+        "channel": "Demand_L65_241_244",
+        "links": [
+            "L65"
+        ]
+    },
+    {
+        "channel": "Demand_L65_1_8",
+        "links": [
+            "L65"
+        ]
+    },
+    {
+        "channel": "Demand_L65_762_765",
+        "links": [
+            "L65"
+        ]
+    },
+    {
+        "channel": "Demand_L66_459_498",
+        "links": [
+            "L66"
+        ]
+    },
+    {
+        "channel": "Demand_L66_543_602",
+        "links": [
+            "L66"
+        ]
+    },
+    {
+        "channel": "Demand_L66_695_754",
+        "links": [
+            "L66"
+        ]
+    },
+    {
+        "channel": "Demand_L66_63_70",
+        "links": [
+            "L66"
+        ]
+    },
+    {
+        "channel": "Demand_L66_164_183",
+        "links": [
+            "L66"
+        ]
+    },
+    {
+        "channel": "Demand_L66_18_21",
+        "links": [
+            "L66"
+        ]
+    },
+    {
+        "channel": "Demand_L67_622_709",
+        "links": [
+            "L67"
+        ]
+    },
+    {
+        "channel": "Demand_L67_489_500",
+        "links": [
+            "L67"
+        ]
+    },
+    {
+        "channel": "Demand_L67_189_240",
+        "links": [
+            "L67"
+        ]
+    },
+    {
+        "channel": "Demand_L67_303_326",
+        "links": [
+            "L67"
+        ]
+    },
+    {
+        "channel": "Demand_L67_367_394",
+        "links": [
+            "L67"
+        ]
+    },
+    {
+        "channel": "Demand_L67_140_143",
+        "links": [
+            "L67"
+        ]
+    },
+    {
+        "channel": "Demand_L67_713_716",
+        "links": [
+            "L67"
+        ]
+    },
+    {
+        "channel": "Demand_L67_554_557",
+        "links": [
+            "L67"
+        ]
+    },
+    {
+        "channel": "Demand_L68_213_228",
+        "links": [
+            "L68"
+        ]
+    },
+    {
+        "channel": "Demand_L68_644_695",
+        "links": [
+            "L68"
+        ]
+    },
+    {
+        "channel": "Demand_L68_441_524",
+        "links": [
+            "L68"
+        ]
+    },
+    {
+        "channel": "Demand_L68_361_368",
+        "links": [
+            "L68"
+        ]
+    },
+    {
+        "channel": "Demand_L70_334_365",
+        "links": [
+            "L70"
+        ]
+    },
+    {
+        "channel": "Demand_L70_161_168",
+        "links": [
+            "L70"
+        ]
+    },
+    {
+        "channel": "Demand_L70_201_272",
+        "links": [
+            "L70"
+        ]
+    },
+    {
+        "channel": "Demand_L70_510_553",
+        "links": [
+            "L70"
+        ]
+    },
+    {
+        "channel": "Demand_L70_446_477",
+        "links": [
+            "L70"
+        ]
+    },
+    {
+        "channel": "Demand_L70_758_761",
+        "links": [
+            "L70"
+        ]
+    },
+    {
+        "channel": "Demand_L71_459_478",
+        "links": [
+            "L71"
+        ]
+    },
+    {
+        "channel": "Demand_L71_208_299",
+        "links": [
+            "L71"
+        ]
+    },
+    {
+        "channel": "Demand_L71_39_78",
+        "links": [
+            "L71"
+        ]
+    },
+    {
+        "channel": "Demand_L71_500_503",
+        "links": [
+            "L71"
+        ]
+    },
+    {
+        "channel": "Demand_L71_534_597",
+        "links": [
+            "L71"
+        ]
+    },
+    {
+        "channel": "Demand_L71_379_402",
+        "links": [
+            "L71"
+        ]
+    },
+    {
+        "channel": "Demand_L71_678_697",
+        "links": [
+            "L71"
+        ]
+    },
+    {
+        "channel": "Demand_L71_650_653",
+        "links": [
+            "L71"
+        ]
+    },
+    {
+        "channel": "Demand_L72_309_344",
+        "links": [
+            "L72"
+        ]
+    },
+    {
+        "channel": "Demand_L72_591_658",
+        "links": [
+            "L72"
+        ]
+    },
+    {
+        "channel": "Demand_L72_518_569",
+        "links": [
+            "L72"
+        ]
+    },
+    {
+        "channel": "Demand_L72_475_502",
+        "links": [
+            "L72"
+        ]
+    },
+    {
+        "channel": "Demand_L72_460_467",
+        "links": [
+            "L72"
+        ]
+    },
+    {
+        "channel": "Demand_L74_643_646",
+        "links": [
+            "L74"
+        ]
+    },
+    {
+        "channel": "Demand_L74_570_593",
+        "links": [
+            "L74"
+        ]
+    },
+    {
+        "channel": "Demand_L74_434_509",
+        "links": [
+            "L74"
+        ]
+    },
+    {
+        "channel": "Demand_L74_669_688",
+        "links": [
+            "L74"
+        ]
+    },
+    {
+        "channel": "Demand_L75_191_266",
+        "links": [
+            "L75"
+        ]
+    },
+    {
+        "channel": "Demand_L75_514_593",
+        "links": [
+            "L75"
+        ]
+    },
+    {
+        "channel": "Demand_L75_331_334",
+        "links": [
+            "L75"
+        ]
+    },
+    {
+        "channel": "Demand_L76_650_705",
+        "links": [
+            "L76"
+        ]
+    },
+    {
+        "channel": "Demand_L76_12_51",
+        "links": [
+            "L76"
+        ]
+    },
+    {
+        "channel": "Demand_L76_245_256",
+        "links": [
+            "L76"
+        ]
+    },
+    {
+        "channel": "Demand_L76_466_517",
+        "links": [
+            "L76"
+        ]
+    },
+    {
+        "channel": "Demand_L76_88_95",
+        "links": [
+            "L76"
+        ]
+    },
+    {
+        "channel": "Demand_L82_372_403",
+        "links": [
+            "L82"
+        ]
+    },
+    {
+        "channel": "Demand_L82_633_656",
+        "links": [
+            "L82"
+        ]
+    },
+    {
+        "channel": "Demand_L82_608_623",
+        "links": [
+            "L82"
+        ]
+    },
+    {
+        "channel": "Demand_L82_687_706",
+        "links": [
+            "L82"
+        ]
+    },
+    {
+        "channel": "Demand_L82_442_461",
+        "links": [
+            "L82"
+        ]
+    },
+    {
+        "channel": "Demand_L82_305_328",
+        "links": [
+            "L82"
+        ]
+    },
+    {
+        "channel": "Demand_L82_18_57",
+        "links": [
+            "L82"
+        ]
+    },
+    {
+        "channel": "Demand_L82_754_761",
+        "links": [
+            "L82"
+        ]
+    },
+    {
+        "channel": "Demand_L84_650_681",
+        "links": [
+            "L84"
+        ]
+    },
+    {
+        "channel": "Demand_L84_497_508",
+        "links": [
+            "L84"
+        ]
+    },
+    {
+        "channel": "Demand_L84_201_224",
+        "links": [
+            "L84"
+        ]
+    },
+    {
+        "channel": "Demand_L84_99_122",
+        "links": [
+            "L84"
+        ]
+    },
+    {
+        "channel": "Demand_L86_28_51",
+        "links": [
+            "L86"
+        ]
+    },
+    {
+        "channel": "Demand_L86_60_127",
+        "links": [
+            "L86"
+        ]
+    },
+    {
+        "channel": "Demand_L86_309_344",
+        "links": [
+            "L86"
+        ]
+    },
+    {
+        "channel": "Demand_L86_531_566",
+        "links": [
+            "L86"
+        ]
+    },
+    {
+        "channel": "Demand_L86_210_261",
+        "links": [
+            "L86"
+        ]
+    },
+    {
+        "channel": "Demand_L86_393_400",
+        "links": [
+            "L86"
+        ]
+    },
+    {
+        "channel": "Demand_L87_279_314",
+        "links": [
+            "L87"
+        ]
+    },
+    {
+        "channel": "Demand_L87_726_741",
+        "links": [
+            "L87"
+        ]
+    },
+    {
+        "channel": "Demand_L87_155_178",
+        "links": [
+            "L87"
+        ]
+    },
+    {
+        "channel": "Demand_L105_655_710",
+        "links": [
+            "L105"
+        ]
+    },
+    {
+        "channel": "Demand_L105_234_257",
+        "links": [
+            "L105"
+        ]
+    },
+    {
+        "channel": "Demand_L105_312_371",
+        "links": [
+            "L105"
+        ]
+    },
+    {
+        "channel": "Demand_L105_21_32",
+        "links": [
+            "L105"
+        ]
+    },
+    {
+        "channel": "Demand_L110_543_602",
+        "links": [
+            "L110"
+        ]
+    },
+    {
+        "channel": "Demand_L110_36_79",
+        "links": [
+            "L110"
+        ]
+    },
+    {
+        "channel": "Demand_L110_711_730",
+        "links": [
+            "L110"
+        ]
+    },
+    {
+        "channel": "Demand_L110_254_257",
+        "links": [
+            "L110"
+        ]
+    },
+    {
+        "channel": "Demand_L110_517_520",
+        "links": [
+            "L110"
+        ]
+    },
+    {
+        "channel": "Demand_L119_63_94",
+        "links": [
+            "L119"
+        ]
+    },
+    {
+        "channel": "Demand_L119_376_407",
+        "links": [
+            "L119"
+        ]
+    },
+    {
+        "channel": "Demand_L119_727_730",
+        "links": [
+            "L119"
+        ]
+    },
+    {
+        "channel": "Demand_L119_654_657",
+        "links": [
+            "L119"
+        ]
+    },
+    {
+        "channel": "Demand_L119_700_703",
+        "links": [
+            "L119"
+        ]
+    }
+]
+
+    const map = L.map("map").setView([AVERAGELAT, AVERAGELONG], 6)
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(map)
+
+    const nodeMarkers = {}
+    NODES.forEach((node) => {
+        nodeMarkers[node.id] = L.circleMarker([node.lat, node.lng], {
+            radius: 8,
+            color: "#008BF8",
+        })
+            .addTo(map)
+            .bindPopup(`Lat: ${node.lat.toFixed(4)} <br> Lgn: ${node.lng.toFixed(4)} <br> ID: ${node.id}`)
+    })
+
+    const amplifierMarkers = {};
+    AMPLIFIERS.forEach((amp) => {
+        amplifierMarkers[amp.name.trim()] = amp;
+        L.circleMarker([amp.lat, amp.lng], {
+            radius: 6,
+            color: "#ffc800",
+            fillOpacity: 1
+        })
+            .addTo(map)
+            .bindPopup(`Name: ${amp.name} <br> Lat: ${amp.lat.toFixed(4)} <br> Lgn: ${amp.lng.toFixed(4)} <br> OSNR: ${amp.OSNR} `)
+    })
+
+    let polylines = {};
+
+    LINKS.forEach((link) => {
+        const fromNode = nodeMarkers[link.from];
+        const toNode = nodeMarkers[link.to];
+
+        if (!fromNode || !toNode) return;
+
+        const pathCoords = [];
+        pathCoords.push([fromNode.getLatLng().lat, fromNode.getLatLng().lng]);
+
+        link.amplifiers.forEach((ampName) => {
+            const amp = amplifierMarkers[ampName.trim()];
+            if (amp) {
+                pathCoords.push([amp.lat, amp.lng]);
+            }
+        });
+
+        pathCoords.push([toNode.getLatLng().lat, toNode.getLatLng().lng]);
+
+        const polyline = L.polyline(pathCoords, {
+            color: "green",
+            weight: 7,
+            opacity: 0.2 + link.percentage / 125,
+        }).addTo(map);
+
+        polylines[link.id] = polyline;
+
+        polyline.bindTooltip(`${link.percentage}%`, {
+            permanent: true,
+        });
+
+        polyline.on("click", () => {
+            const infoBox = document.getElementById("info-box")
+
+            infoBox.innerHTML = ""
+
+            const titleBox = document.createElement("div")
+            titleBox.style.padding = "5px"
+            const title = document.createElement("strong")
+            title.textContent = link.id + " Link Usage:"
+            titleBox.appendChild(title)
+            infoBox.appendChild(titleBox)
+
+            const tableBox = document.createElement("div")
+            tableBox.className = "table-box"
+
+            const table = document.createElement("table")
+            const thead = document.createElement("thead")
+            table.appendChild(thead)
+
+            const tbody = document.createElement("tbody")
+            const slicesRow = document.createElement("tr")
+            const demandsRow = document.createElement("tr")
+
+            const slicesCell = document.createElement("td")
+            slicesCell.textContent = "Slices"
+            slicesCell.style.fontWeight = "bold"
+            slicesRow.appendChild(slicesCell)
+
+            const demandsCell = document.createElement("td")
+            demandsCell.textContent = "Demands"
+            demandsCell.style.fontWeight = "bold"
+            demandsRow.appendChild(demandsCell)
+
+            link.info.forEach((item) => {
+                const cellSlices = document.createElement("td")
+                cellSlices.textContent = item.slices
+
+                const cellDemand = document.createElement("td")
+                cellDemand.textContent = item.demand
+
+                slicesRow.appendChild(cellSlices)
+                demandsRow.appendChild(cellDemand)
+            })
+            tbody.appendChild(slicesRow)
+            tbody.appendChild(demandsRow)
+
+            table.appendChild(tbody)
+
+            tableBox.appendChild(table)
+            infoBox.appendChild(tableBox)
+        })
+    })
+
+    let currentSelectedChannel = null;
+
+    channelsDiv = document.getElementById("channels");
+    h2Title = document.createElement("h2")
+    h2Title.innerHTML = "Demands (Channels)"
+    channelsDiv.appendChild(h2Title)
+
+    const searchInput = document.createElement("input");
+    searchInput.type = "text";
+    searchInput.placeholder = "Search...";
+    channelsDiv.appendChild(searchInput);
+
+    channelsList = document.createElement("ul")
+    CHANNELS.forEach((channel) => {
+        channelLi = document.createElement("li")
+        channelButton = document.createElement("button")
+        channelSpan = document.createElement("span")
+        channelSpan.innerHTML = channel.channel
+        channelButton.appendChild(channelSpan)
+
+        channelButton.addEventListener("click", function () {
+            if (currentSelectedChannel && currentSelectedChannel.channel === channel.channel) {
+                changeLinkColors(channel.links, 'green')
+                currentSelectedChannel = null
+            } else {
+                if (currentSelectedChannel) {
+                    changeLinkColors(currentSelectedChannel.links, 'green');
+                }
+                changeLinkColors(channel.links, 'red')
+                currentSelectedChannel = channel
+            }
+        });
+
+        channelLi.appendChild(channelButton)
+        channelsList.appendChild(channelLi)
+    })
+    channelsDiv.appendChild(channelsList)
+
+    function renderChannels(filterText = "") {
+  channelsList.innerHTML = ""; // clear list
+  CHANNELS.forEach((channel) => {
+    if (channel.channel.toLowerCase().includes(filterText.toLowerCase())) {
+      const channelLi = document.createElement("li");
+      const channelButton = document.createElement("button");
+      const channelSpan = document.createElement("span");
+      channelSpan.innerHTML = channel.channel;
+      channelButton.appendChild(channelSpan);
+
+      channelButton.addEventListener("click", function () {
+        if (currentSelectedChannel && currentSelectedChannel.channel === channel.channel) {
+          changeLinkColors(channel.links, "green");
+          currentSelectedChannel = null;
+        } else {
+          if (currentSelectedChannel) {
+            changeLinkColors(currentSelectedChannel.links, "green");
+          }
+          changeLinkColors(channel.links, "red");
+          currentSelectedChannel = channel;
+        }
+      });
+
+      channelLi.appendChild(channelButton);
+      channelsList.appendChild(channelLi);
+    }
+  });
+}
+
+// Initial render with no filter
+renderChannels();
+
+// Filter channels when typing
+searchInput.addEventListener("input", (e) => {
+  renderChannels(e.target.value);
+});
+
+    function changeLinkColors(linkIds, color) {
+        linkIds.forEach((linkId) => {
+            const link = LINKS.find(l => l.id === linkId);
+
+            if (link && polylines[link.id]) {
+                const polyline = polylines[link.id];
+                polyline.setStyle({color: color});
+            }
+        });
+    }
+
+</script>
+</body>
+</html>

@@ -1,12 +1,13 @@
 import { Box, Typography, Paper, List, ListItem, ListItemText, Link } from "@mui/material";
-import Sidebar from "./Sidebar";
 
 const PrivacyPolicy = () => {
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh" }}>
-      <Sidebar />
-      <Box p={4} width="100%" sx={{ flexGrow: 1 }}>
-        <Typography variant="h3" component="h1" gutterBottom>
+    <Box >
+      <Box p={4}>
+        <Typography variant="h3" component="h1" gutterBottom sx={{
+          fontFamily: "'DejaVu Sans Mono', monospace",
+          color: "#333",
+        }}>
           Privacy Policy
         </Typography>
 
@@ -48,15 +49,6 @@ const PrivacyPolicy = () => {
             </ListItem>
           </List>
         </Paper>
-
-        <Typography variant="body2" color="text.secondary">
-          The database is maintained under the{" "}
-          <Link href="https://github.com/op-net/ngnd/blob/main/LICENSE" target="_blank">
-            MIT License
-          </Link>
-          .<br />
-          © 2025 Warsaw University of Technology & Universidad Politécnica de Madrid.
-        </Typography>
       </Box>
     </Box>
   );

@@ -1,0 +1,1892 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Network Visualization</title>
+    <link
+            rel="stylesheet"
+            href="https://unpkg.com/leaflet/dist/leaflet.css"
+    />
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #map {
+            height: 100%;
+            width: 80%;
+        }
+
+        .info-box {
+            background: white;
+            height: 120px;
+            border: 3px solid;
+            box-sizing: border-box;
+            padding: 8px;
+            border-color: #47a243;
+        }
+
+        .table-box {
+            overflow-x: auto;
+            margin-top: 5px;
+        }
+
+        .up-div {
+            width: 100%;
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .channels {
+            height: 100%;
+            width: 20%;
+            overflow: auto;
+        }
+
+        .channels h2 {
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            padding-left: 40px;
+        }
+
+        .channels input {
+            margin-left: 40px;
+        }
+
+        .channels ul {
+            width: fit-content;
+            position: relative;
+        }
+
+        .channels ul li {
+            position: relative;
+            left: 0;
+            list-style: none;
+            margin: 4px 0;
+            border-left: 2px solid #217c20;
+            transition: 0.5s;
+        }
+
+        .channels ul li button {
+            background: none;
+            border: none;
+            padding: 0;
+            font: inherit;
+            cursor: pointer;
+        }
+
+        .channels ul li button {
+            position: relative;
+            padding: 4px;
+            display: inline-block;
+            z-index: 1;
+            transition: 0.5s;
+        }
+
+        .channels ul li:hover button {
+            color: #fff;
+        }
+
+        .channels ul li:before {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: #217c20;
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: 0.5s;
+        }
+
+        .channels ul li:hover:before {
+            transform: scaleX(1);
+        }
+
+
+        table,
+        th,
+        td {
+            font-weight: normal;
+            text-align: center;
+            width: fit-content;
+            white-space: nowrap;
+            border: 1px solid #c2dcb6;
+            border-collapse: collapse;
+        }
+
+        td {
+            padding: 3px;
+            background-color: #d9eec5;
+        }
+    </style>
+</head>
+<body>
+<div class="up-div">
+    <div id="map"></div>
+    <div id="channels" class="channels"></div>
+</div>
+<div class="info-box" id="info-box">Click on a link for details.</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+    const NODES = [
+    {
+        "id": "Gdansk",
+        "lat": 54.2,
+        "lng": 18.6
+    },
+    {
+        "id": "Bydgoszcz",
+        "lat": 53.1,
+        "lng": 17.9
+    },
+    {
+        "id": "Kolobrzeg",
+        "lat": 54.2,
+        "lng": 16.1
+    },
+    {
+        "id": "Katowice",
+        "lat": 50.3,
+        "lng": 18.8
+    },
+    {
+        "id": "Krakow",
+        "lat": 50.0,
+        "lng": 19.8
+    },
+    {
+        "id": "Bialystok",
+        "lat": 53.1,
+        "lng": 23.1
+    },
+    {
+        "id": "Lodz",
+        "lat": 51.7,
+        "lng": 19.4
+    },
+    {
+        "id": "Poznan",
+        "lat": 52.4,
+        "lng": 16.8
+    },
+    {
+        "id": "Rzeszow",
+        "lat": 50.0,
+        "lng": 21.9
+    },
+    {
+        "id": "Szczecin",
+        "lat": 53.4,
+        "lng": 14.5
+    },
+    {
+        "id": "Warsaw",
+        "lat": 52.2,
+        "lng": 21.0
+    },
+    {
+        "id": "Wroclaw",
+        "lat": 51.1,
+        "lng": 16.9
+    }
+];
+    const AMPLIFIERS = [
+    {
+        "name": "Wroclaw",
+        "lat": 51.1089776,
+        "lng": 17.0326689,
+        "OSNR": 34.51,
+        "distance": 51.93
+    },
+    {
+        "name": "Choszczno",
+        "lat": 53.16905,
+        "lng": 15.42054,
+        "OSNR": 31.79,
+        "distance": 64.77
+    },
+    {
+        "name": "Plonsk",
+        "lat": 52.62348,
+        "lng": 20.37552,
+        "OSNR": 31.85,
+        "distance": 64.85
+    },
+    {
+        "name": "Bialystock",
+        "lat": 53.13333,
+        "lng": 23.16433,
+        "OSNR": 35.23,
+        "distance": 49.21
+    },
+    {
+        "name": "Slawno",
+        "lat": 54.355,
+        "lng": 16.67,
+        "OSNR": 29.68,
+        "distance": 74.57
+    },
+    {
+        "name": "Lodz",
+        "lat": 51.759445,
+        "lng": 19.457216,
+        "OSNR": 31.11,
+        "distance": 68.46
+    },
+    {
+        "name": "Siemiatycze",
+        "lat": 52.42719,
+        "lng": 22.86231,
+        "OSNR": 29.99,
+        "distance": 73.06
+    },
+    {
+        "name": "Ciechanow",
+        "lat": 52.88141,
+        "lng": 20.61996,
+        "OSNR": 29.41,
+        "distance": 76.06
+    },
+    {
+        "name": "Susz",
+        "lat": 53.71703,
+        "lng": 19.33541,
+        "OSNR": 34.01,
+        "distance": 55.8
+    },
+    {
+        "name": "Szczecin",
+        "lat": 53.428544,
+        "lng": 14.552812,
+        "OSNR": 31.87,
+        "distance": 64.37
+    },
+    {
+        "name": "Konskie ",
+        "lat": 51.1917,
+        "lng": 20.4061,
+        "OSNR": 31.29,
+        "distance": 67.67
+    },
+    {
+        "name": "Rzeszow",
+        "lat": 50.00545,
+        "lng": 21.98848,
+        "OSNR": 29.78,
+        "distance": 74.34
+    },
+    {
+        "name": "Kolobrzeg",
+        "lat": 54.175919,
+        "lng": 15.583267,
+        "OSNR": 32.0,
+        "distance": 63.76
+    },
+    {
+        "name": "Nowy-Staw",
+        "lat": 54.13609,
+        "lng": 19.00909,
+        "OSNR": 34.74,
+        "distance": 51.21
+    },
+    {
+        "name": "Stalowa-Wola",
+        "lat": 50.5826,
+        "lng": 22.05359,
+        "OSNR": 33.28,
+        "distance": 58.85
+    },
+    {
+        "name": "Grzmiaca",
+        "lat": 53.83734,
+        "lng": 16.43512,
+        "OSNR": 31.35,
+        "distance": 67.6
+    },
+    {
+        "name": "Krakow ",
+        "lat": 50.07262,
+        "lng": 19.9325,
+        "OSNR": 30.94,
+        "distance": 69.31
+    },
+    {
+        "name": "Poznan",
+        "lat": 52.406376,
+        "lng": 16.925167,
+        "OSNR": 29.6,
+        "distance": 75.13
+    },
+    {
+        "name": "Skepe",
+        "lat": 52.868,
+        "lng": 19.356,
+        "OSNR": 29.98,
+        "distance": 73.22
+    },
+    {
+        "name": "Paslek",
+        "lat": 54.061907,
+        "lng": 19.664068,
+        "OSNR": 29.42,
+        "distance": 76.01
+    },
+    {
+        "name": "Goszczyn ",
+        "lat": 51.73187,
+        "lng": 20.85154,
+        "OSNR": 33.62,
+        "distance": 57.22
+    },
+    {
+        "name": "Jedrzejow ",
+        "lat": 50.63945,
+        "lng": 20.30454,
+        "OSNR": 32.47,
+        "distance": 61.75
+    },
+    {
+        "name": "Lebork",
+        "lat": 54.53921,
+        "lng": 17.75012,
+        "OSNR": 30.6,
+        "distance": 71.44
+    },
+    {
+        "name": "Skierniewice ",
+        "lat": 51.95485,
+        "lng": 20.15837,
+        "OSNR": 30.72,
+        "distance": 70.33
+    },
+    {
+        "name": "Sieradz",
+        "lat": 51.5956014,
+        "lng": 18.7302994,
+        "OSNR": 32.1,
+        "distance": 63.35
+    },
+    {
+        "name": "Czestochowa",
+        "lat": 50.79646,
+        "lng": 19.12409,
+        "OSNR": 35.06,
+        "distance": 61.69
+    },
+    {
+        "name": "Lochow ",
+        "lat": 52.5307,
+        "lng": 21.68182,
+        "OSNR": 34.38,
+        "distance": 53.14
+    },
+    {
+        "name": "Grodkow",
+        "lat": 50.69625,
+        "lng": 17.38516,
+        "OSNR": 34.99,
+        "distance": 50.17
+    },
+    {
+        "name": "Olsztyn",
+        "lat": 53.770226,
+        "lng": 20.490189,
+        "OSNR": 32.27,
+        "distance": 62.74
+    },
+    {
+        "name": "Belchatow",
+        "lat": 51.36883,
+        "lng": 19.35671,
+        "OSNR": 33.43,
+        "distance": 63.32
+    },
+    {
+        "name": "Myszniec",
+        "lat": 53.38055,
+        "lng": 21.34961,
+        "OSNR": 30.54,
+        "distance": 71.64
+    },
+    {
+        "name": "Katowice",
+        "lat": 50.270908,
+        "lng": 19.039993,
+        "OSNR": 29.93,
+        "distance": 73.46
+    },
+    {
+        "name": "Kepno",
+        "lat": 51.283,
+        "lng": 17.983,
+        "OSNR": 30.98,
+        "distance": 69.11
+    },
+    {
+        "name": "Tarnow ",
+        "lat": 50.0121,
+        "lng": 20.98584,
+        "OSNR": 29.93,
+        "distance": 73.46
+    },
+    {
+        "name": "Dabrowno",
+        "lat": 53.4333,
+        "lng": 20.0333,
+        "OSNR": 30.0,
+        "distance": 73.13
+    },
+    {
+        "name": "Gdansk",
+        "lat": 54.347629,
+        "lng": 18.6452324,
+        "OSNR": 37.26,
+        "distance": 36.77
+    },
+    {
+        "name": "Bydgoszcz",
+        "lat": 53.123482,
+        "lng": 18.008438,
+        "OSNR": 36.19,
+        "distance": 42.26
+    },
+    {
+        "name": "Rdzyn-Podlaski",
+        "lat": 51.78333,
+        "lng": 22.61667,
+        "OSNR": 30.94,
+        "distance": 69.28
+    },
+    {
+        "name": "Gogolin",
+        "lat": 50.49222,
+        "lng": 18.01994,
+        "OSNR": 29.55,
+        "distance": 75.5
+    },
+    {
+        "name": "Zlotow",
+        "lat": 53.36346,
+        "lng": 17.04082,
+        "OSNR": 31.61,
+        "distance": 66.49
+    },
+    {
+        "name": "Torun",
+        "lat": 53.01375,
+        "lng": 18.59814,
+        "OSNR": 34.47,
+        "distance": 52.19
+    },
+    {
+        "name": "Wagrowiec",
+        "lat": 52.80848,
+        "lng": 17.19966,
+        "OSNR": 35.15,
+        "distance": 49.57
+    },
+    {
+        "name": "Lomza",
+        "lat": 53.1781197,
+        "lng": 22.0590321,
+        "OSNR": 34.6,
+        "distance": 52.22
+    },
+    {
+        "name": "Nowogard",
+        "lat": 53.67418,
+        "lng": 15.116374,
+        "OSNR": 35.88,
+        "distance": 46.15
+    },
+    {
+        "name": "Mialy",
+        "lat": 52.8067643,
+        "lng": 16.1722922,
+        "OSNR": 31.29,
+        "distance": 67.7
+    },
+    {
+        "name": "Szeptietowo",
+        "lat": 52.8703,
+        "lng": 22.5439,
+        "OSNR": 30.93,
+        "distance": 69.36
+    },
+    {
+        "name": "Leszno",
+        "lat": 51.841986,
+        "lng": 16.593754,
+        "OSNR": 29.35,
+        "distance": 76.03
+    },
+    {
+        "name": "Lublin",
+        "lat": 51.246452,
+        "lng": 22.568445,
+        "OSNR": 29.83,
+        "distance": 74.04
+    }
+];
+    const LINKS = [
+    {
+        "id": "Link_0_10",
+        "from": "Gdansk",
+        "to": "Warsaw",
+        "percentage": 23,
+        "amplifiers": [
+            "Gdansk",
+            "Nowy-Staw",
+            "Susz",
+            "Dabrowno",
+            "Ciechanow"
+        ],
+        "info": [
+            {
+                "demand": "Demand_Link_0_10_55_62",
+                "slices": "55-62"
+            },
+            {
+                "demand": "Demand_Link_0_10_80_115",
+                "slices": "80-115"
+            },
+            {
+                "demand": "Demand_Link_0_10_133_136",
+                "slices": "133-136"
+            },
+            {
+                "demand": "Demand_Link_0_10_285_292",
+                "slices": "285-292"
+            },
+            {
+                "demand": "Demand_Link_0_10_468_535",
+                "slices": "468-535"
+            },
+            {
+                "demand": "Demand_Link_0_10_574_597",
+                "slices": "574-597"
+            },
+            {
+                "demand": "Demand_Link_0_10_728_755",
+                "slices": "728-755"
+            }
+        ]
+    },
+    {
+        "id": "Link_0_2",
+        "from": "Gdansk",
+        "to": "Kolobrzeg",
+        "percentage": 20,
+        "amplifiers": [
+            "Gdansk",
+            "Lebork",
+            "Slawno"
+        ],
+        "info": [
+            {
+                "demand": "Demand_Link_0_2_155_166",
+                "slices": "155-166"
+            },
+            {
+                "demand": "Demand_Link_0_2_211_230",
+                "slices": "211-230"
+            },
+            {
+                "demand": "Demand_Link_0_2_430_481",
+                "slices": "430-481"
+            },
+            {
+                "demand": "Demand_Link_0_2_549_568",
+                "slices": "549-568"
+            },
+            {
+                "demand": "Demand_Link_0_2_645_676",
+                "slices": "645-676"
+            },
+            {
+                "demand": "Demand_Link_0_2_738_753",
+                "slices": "738-753"
+            }
+        ]
+    },
+    {
+        "id": "Link_1_2",
+        "from": "Bydgoszcz",
+        "to": "Kolobrzeg",
+        "percentage": 10,
+        "amplifiers": [
+            "Bydgoszcz",
+            "Zlotow",
+            "Grzmiaca"
+        ],
+        "info": [
+            {
+                "demand": "Demand_Link_1_2_363_438",
+                "slices": "363-438"
+            }
+        ]
+    },
+    {
+        "id": "Link_1_7",
+        "from": "Bydgoszcz",
+        "to": "Poznan",
+        "percentage": 26,
+        "amplifiers": [
+            "Bydgoszcz",
+            "Wagrowiec"
+        ],
+        "info": [
+            {
+                "demand": "Demand_Link_1_7_9_104",
+                "slices": "9-104"
+            },
+            {
+                "demand": "Demand_Link_1_7_114_125",
+                "slices": "114-125"
+            },
+            {
+                "demand": "Demand_Link_1_7_167_170",
+                "slices": "167-170"
+            },
+            {
+                "demand": "Demand_Link_1_7_265_344",
+                "slices": "265-344"
+            },
+            {
+                "demand": "Demand_Link_1_7_492_499",
+                "slices": "492-499"
+            }
+        ]
+    },
+    {
+        "id": "Link_1_10",
+        "from": "Bydgoszcz",
+        "to": "Warsaw",
+        "percentage": 38,
+        "amplifiers": [
+            "Bydgoszcz",
+            "Torun",
+            "Skepe",
+            "Plonsk"
+        ],
+        "info": [
+            {
+                "demand": "Demand_Link_1_10_131_134",
+                "slices": "131-134"
+            },
+            {
+                "demand": "Demand_Link_1_10_238_257",
+                "slices": "238-257"
+            },
+            {
+                "demand": "Demand_Link_1_10_282_305",
+                "slices": "282-305"
+            },
+            {
+                "demand": "Demand_Link_1_10_322_337",
+                "slices": "322-337"
+            },
+            {
+                "demand": "Demand_Link_1_10_418_441",
+                "slices": "418-441"
+            },
+            {
+                "demand": "Demand_Link_1_10_492_583",
+                "slices": "492-583"
+            },
+            {
+                "demand": "Demand_Link_1_10_603_674",
+                "slices": "603-674"
+            },
+            {
+                "demand": "Demand_Link_1_10_724_763",
+                "slices": "724-763"
+            }
+        ]
+    },
+    {
+        "id": "Link_2_9",
+        "from": "Kolobrzeg",
+        "to": "Szczecin",
+        "percentage": 33,
+        "amplifiers": [
+            "Kolobrzeg",
+            "Nowogard"
+        ],
+        "info": [
+            {
+                "demand": "Demand_Link_2_9_57_60",
+                "slices": "57-60"
+            },
+            {
+                "demand": "Demand_Link_2_9_74_117",
+                "slices": "74-117"
+            },
+            {
+                "demand": "Demand_Link_2_9_239_254",
+                "slices": "239-254"
+            },
+            {
+                "demand": "Demand_Link_2_9_274_357",
+                "slices": "274-357"
+            },
+            {
+                "demand": "Demand_Link_2_9_417_424",
+                "slices": "417-424"
+            },
+            {
+                "demand": "Demand_Link_2_9_552_643",
+                "slices": "552-643"
+            },
+            {
+                "demand": "Demand_Link_2_9_724_727",
+                "slices": "724-727"
+            }
+        ]
+    },
+    {
+        "id": "Link_3_4",
+        "from": "Katowice",
+        "to": "Krakow",
+        "percentage": 15,
+        "amplifiers": [
+            "Katowice"
+        ],
+        "info": [
+            {
+                "demand": "Demand_Link_3_4_244_271",
+                "slices": "244-271"
+            },
+            {
+                "demand": "Demand_Link_3_4_412_415",
+                "slices": "412-415"
+            },
+            {
+                "demand": "Demand_Link_3_4_637_720",
+                "slices": "637-720"
+            }
+        ]
+    },
+    {
+        "id": "Link_3_6",
+        "from": "Katowice",
+        "to": "Lodz",
+        "percentage": 10,
+        "amplifiers": [
+            "Czestochowa",
+            "Belchatow",
+            "Lodz"
+        ],
+        "info": [
+            {
+                "demand": "Demand_Link_3_6_363_370",
+                "slices": "363-370"
+            },
+            {
+                "demand": "Demand_Link_3_6_418_453",
+                "slices": "418-453"
+            },
+            {
+                "demand": "Demand_Link_3_6_510_529",
+                "slices": "510-529"
+            },
+            {
+                "demand": "Demand_Link_3_6_598_605",
+                "slices": "598-605"
+            },
+            {
+                "demand": "Demand_Link_3_6_697_700",
+                "slices": "697-700"
+            }
+        ]
+    },
+    {
+        "id": "Link_3_11",
+        "from": "Katowice",
+        "to": "Wroclaw",
+        "percentage": 19,
+        "amplifiers": [
+            "Gogolin",
+            "Grodkow",
+            "Wroclaw"
+        ],
+        "info": [
+            {
+                "demand": "Demand_Link_3_11_94_105",
+                "slices": "94-105"
+            },
+            {
+                "demand": "Demand_Link_3_11_112_163",
+                "slices": "112-163"
+            },
+            {
+                "demand": "Demand_Link_3_11_176_179",
+                "slices": "176-179"
+            },
+            {
+                "demand": "Demand_Link_3_11_379_406",
+                "slices": "379-406"
+            },
+            {
+                "demand": "Demand_Link_3_11_600_647",
+                "slices": "600-647"
+            }
+        ]
+    },
+    {
+        "id": "Link_4_8",
+        "from": "Krakow",
+        "to": "Rzeszow",
+        "percentage": 18,
+        "amplifiers": [
+            "Tarnow ",
+            "Rzeszow"
+        ],
+        "info": [
+            {
+                "demand": "Demand_Link_4_8_235_270",
+                "slices": "235-270"
+            },
+            {
+                "demand": "Demand_Link_4_8_358_361",
+                "slices": "358-361"
+            },
+            {
+                "demand": "Demand_Link_4_8_387_394",
+                "slices": "387-394"
+            },
+            {
+                "demand": "Demand_Link_4_8_478_533",
+                "slices": "478-533"
+            },
+            {
+                "demand": "Demand_Link_4_8_573_608",
+                "slices": "573-608"
+            }
+        ]
+    },
+    {
+        "id": "Link_4_10",
+        "from": "Krakow",
+        "to": "Warsaw",
+        "percentage": 12,
+        "amplifiers": [
+            "Krakow ",
+            "Jedrzejow ",
+            "Konskie ",
+            "Goszczyn "
+        ],
+        "info": [
+            {
+                "demand": "Demand_Link_4_10_244_247",
+                "slices": "244-247"
+            },
+            {
+                "demand": "Demand_Link_4_10_392_471",
+                "slices": "392-471"
+            },
+            {
+                "demand": "Demand_Link_4_10_496_499",
+                "slices": "496-499"
+            },
+            {
+                "demand": "Demand_Link_4_10_718_721",
+                "slices": "718-721"
+            }
+        ]
+    },
+    {
+        "id": "Link_5_8",
+        "from": "Bialystok",
+        "to": "Rzeszow",
+        "percentage": 21,
+        "amplifiers": [
+            "Bialystock",
+            "Siemiatycze",
+            "Rdzyn-Podlaski",
+            "Lublin",
+            "Stalowa-Wola"
+        ],
+        "info": [
+            {
+                "demand": "Demand_Link_5_8_268_327",
+                "slices": "268-327"
+            },
+            {
+                "demand": "Demand_Link_5_8_430_437",
+                "slices": "430-437"
+            },
+            {
+                "demand": "Demand_Link_5_8_638_729",
+                "slices": "638-729"
+            }
+        ]
+    },
+    {
+        "id": "Link_5_10",
+        "from": "Bialystok",
+        "to": "Warsaw",
+        "percentage": 24,
+        "amplifiers": [
+            "Bialystock",
+            "Szeptietowo",
+            "Lochow "
+        ],
+        "info": [
+            {
+                "demand": "Demand_Link_5_10_8_87",
+                "slices": "8-87"
+            },
+            {
+                "demand": "Demand_Link_5_10_121_144",
+                "slices": "121-144"
+            },
+            {
+                "demand": "Demand_Link_5_10_198_253",
+                "slices": "198-253"
+            },
+            {
+                "demand": "Demand_Link_5_10_313_324",
+                "slices": "313-324"
+            },
+            {
+                "demand": "Demand_Link_5_10_434_437",
+                "slices": "434-437"
+            },
+            {
+                "demand": "Demand_Link_5_10_714_721",
+                "slices": "714-721"
+            }
+        ]
+    },
+    {
+        "id": "Link_6_10",
+        "from": "Lodz",
+        "to": "Warsaw",
+        "percentage": 17,
+        "amplifiers": [
+            "Lodz",
+            "Skierniewice "
+        ],
+        "info": [
+            {
+                "demand": "Demand_Link_6_10_398_401",
+                "slices": "398-401"
+            },
+            {
+                "demand": "Demand_Link_6_10_460_479",
+                "slices": "460-479"
+            },
+            {
+                "demand": "Demand_Link_6_10_511_522",
+                "slices": "511-522"
+            },
+            {
+                "demand": "Demand_Link_6_10_535_630",
+                "slices": "535-630"
+            }
+        ]
+    },
+    {
+        "id": "Link_6_11",
+        "from": "Lodz",
+        "to": "Wroclaw",
+        "percentage": 26,
+        "amplifiers": [
+            "Lodz",
+            "Sieradz",
+            "Kepno"
+        ],
+        "info": [
+            {
+                "demand": "Demand_Link_6_11_84_167",
+                "slices": "84-167"
+            },
+            {
+                "demand": "Demand_Link_6_11_315_334",
+                "slices": "315-334"
+            },
+            {
+                "demand": "Demand_Link_6_11_341_344",
+                "slices": "341-344"
+            },
+            {
+                "demand": "Demand_Link_6_11_393_456",
+                "slices": "393-456"
+            },
+            {
+                "demand": "Demand_Link_6_11_463_486",
+                "slices": "463-486"
+            },
+            {
+                "demand": "Demand_Link_6_11_629_632",
+                "slices": "629-632"
+            }
+        ]
+    },
+    {
+        "id": "Link_7_9",
+        "from": "Poznan",
+        "to": "Szczecin",
+        "percentage": 20,
+        "amplifiers": [
+            "Mialy",
+            "Choszczno",
+            "Szczecin"
+        ],
+        "info": [
+            {
+                "demand": "Demand_Link_7_9_28_55",
+                "slices": "28-55"
+            },
+            {
+                "demand": "Demand_Link_7_9_173_184",
+                "slices": "173-184"
+            },
+            {
+                "demand": "Demand_Link_7_9_217_268",
+                "slices": "217-268"
+            },
+            {
+                "demand": "Demand_Link_7_9_377_396",
+                "slices": "377-396"
+            },
+            {
+                "demand": "Demand_Link_7_9_464_483",
+                "slices": "464-483"
+            },
+            {
+                "demand": "Demand_Link_7_9_505_524",
+                "slices": "505-524"
+            }
+        ]
+    },
+    {
+        "id": "Link_7_11",
+        "from": "Poznan",
+        "to": "Wroclaw",
+        "percentage": 10,
+        "amplifiers": [
+            "Poznan",
+            "Leszno"
+        ],
+        "info": [
+            {
+                "demand": "Demand_Link_7_11_237_268",
+                "slices": "237-268"
+            },
+            {
+                "demand": "Demand_Link_7_11_381_384",
+                "slices": "381-384"
+            },
+            {
+                "demand": "Demand_Link_7_11_617_652",
+                "slices": "617-652"
+            },
+            {
+                "demand": "Demand_Link_7_11_752_755",
+                "slices": "752-755"
+            }
+        ]
+    },
+    {
+        "id": "Link_0_5",
+        "from": "Gdansk",
+        "to": "Bialystok",
+        "percentage": 23,
+        "amplifiers": [
+            "Paslek",
+            "Olsztyn",
+            "Myszniec",
+            "Lomza",
+            "Bialystock"
+        ],
+        "info": [
+            {
+                "demand": "Demand_Link_0_5_62_65",
+                "slices": "62-65"
+            },
+            {
+                "demand": "Demand_Link_0_5_78_149",
+                "slices": "78-149"
+            },
+            {
+                "demand": "Demand_Link_0_5_225_232",
+                "slices": "225-232"
+            },
+            {
+                "demand": "Demand_Link_0_5_373_376",
+                "slices": "373-376"
+            },
+            {
+                "demand": "Demand_Link_0_5_621_624",
+                "slices": "621-624"
+            },
+            {
+                "demand": "Demand_Link_0_5_656_739",
+                "slices": "656-739"
+            }
+        ]
+    }
+];
+    const AVERAGELAT = 52.14166666666667;
+    const AVERAGELONG = 18.733333333333338;
+    const CHANNELS = [
+    {
+        "channel": "Demand_Link_0_10_468_535",
+        "links": [
+            "Link_0_10"
+        ]
+    },
+    {
+        "channel": "Demand_Link_0_10_285_292",
+        "links": [
+            "Link_0_10"
+        ]
+    },
+    {
+        "channel": "Demand_Link_0_10_574_597",
+        "links": [
+            "Link_0_10"
+        ]
+    },
+    {
+        "channel": "Demand_Link_0_10_80_115",
+        "links": [
+            "Link_0_10"
+        ]
+    },
+    {
+        "channel": "Demand_Link_0_10_133_136",
+        "links": [
+            "Link_0_10"
+        ]
+    },
+    {
+        "channel": "Demand_Link_0_10_728_755",
+        "links": [
+            "Link_0_10"
+        ]
+    },
+    {
+        "channel": "Demand_Link_0_10_55_62",
+        "links": [
+            "Link_0_10"
+        ]
+    },
+    {
+        "channel": "Demand_Link_0_2_645_676",
+        "links": [
+            "Link_0_2"
+        ]
+    },
+    {
+        "channel": "Demand_Link_0_2_738_753",
+        "links": [
+            "Link_0_2"
+        ]
+    },
+    {
+        "channel": "Demand_Link_0_2_155_166",
+        "links": [
+            "Link_0_2"
+        ]
+    },
+    {
+        "channel": "Demand_Link_0_2_549_568",
+        "links": [
+            "Link_0_2"
+        ]
+    },
+    {
+        "channel": "Demand_Link_0_2_430_481",
+        "links": [
+            "Link_0_2"
+        ]
+    },
+    {
+        "channel": "Demand_Link_0_2_211_230",
+        "links": [
+            "Link_0_2"
+        ]
+    },
+    {
+        "channel": "Demand_Link_1_2_363_438",
+        "links": [
+            "Link_1_2"
+        ]
+    },
+    {
+        "channel": "Demand_Link_1_7_265_344",
+        "links": [
+            "Link_1_7"
+        ]
+    },
+    {
+        "channel": "Demand_Link_1_7_9_104",
+        "links": [
+            "Link_1_7"
+        ]
+    },
+    {
+        "channel": "Demand_Link_1_7_492_499",
+        "links": [
+            "Link_1_7"
+        ]
+    },
+    {
+        "channel": "Demand_Link_1_7_114_125",
+        "links": [
+            "Link_1_7"
+        ]
+    },
+    {
+        "channel": "Demand_Link_1_7_167_170",
+        "links": [
+            "Link_1_7"
+        ]
+    },
+    {
+        "channel": "Demand_Link_1_10_282_305",
+        "links": [
+            "Link_1_10"
+        ]
+    },
+    {
+        "channel": "Demand_Link_1_10_492_583",
+        "links": [
+            "Link_1_10"
+        ]
+    },
+    {
+        "channel": "Demand_Link_1_10_418_441",
+        "links": [
+            "Link_1_10"
+        ]
+    },
+    {
+        "channel": "Demand_Link_1_10_724_763",
+        "links": [
+            "Link_1_10"
+        ]
+    },
+    {
+        "channel": "Demand_Link_1_10_603_674",
+        "links": [
+            "Link_1_10"
+        ]
+    },
+    {
+        "channel": "Demand_Link_1_10_131_134",
+        "links": [
+            "Link_1_10"
+        ]
+    },
+    {
+        "channel": "Demand_Link_1_10_238_257",
+        "links": [
+            "Link_1_10"
+        ]
+    },
+    {
+        "channel": "Demand_Link_1_10_322_337",
+        "links": [
+            "Link_1_10"
+        ]
+    },
+    {
+        "channel": "Demand_Link_2_9_74_117",
+        "links": [
+            "Link_2_9"
+        ]
+    },
+    {
+        "channel": "Demand_Link_2_9_552_643",
+        "links": [
+            "Link_2_9"
+        ]
+    },
+    {
+        "channel": "Demand_Link_2_9_274_357",
+        "links": [
+            "Link_2_9"
+        ]
+    },
+    {
+        "channel": "Demand_Link_2_9_239_254",
+        "links": [
+            "Link_2_9"
+        ]
+    },
+    {
+        "channel": "Demand_Link_2_9_417_424",
+        "links": [
+            "Link_2_9"
+        ]
+    },
+    {
+        "channel": "Demand_Link_2_9_57_60",
+        "links": [
+            "Link_2_9"
+        ]
+    },
+    {
+        "channel": "Demand_Link_2_9_724_727",
+        "links": [
+            "Link_2_9"
+        ]
+    },
+    {
+        "channel": "Demand_Link_3_4_637_720",
+        "links": [
+            "Link_3_4"
+        ]
+    },
+    {
+        "channel": "Demand_Link_3_4_244_271",
+        "links": [
+            "Link_3_4"
+        ]
+    },
+    {
+        "channel": "Demand_Link_3_4_412_415",
+        "links": [
+            "Link_3_4"
+        ]
+    },
+    {
+        "channel": "Demand_Link_3_6_418_453",
+        "links": [
+            "Link_3_6"
+        ]
+    },
+    {
+        "channel": "Demand_Link_3_6_510_529",
+        "links": [
+            "Link_3_6"
+        ]
+    },
+    {
+        "channel": "Demand_Link_3_6_363_370",
+        "links": [
+            "Link_3_6"
+        ]
+    },
+    {
+        "channel": "Demand_Link_3_6_598_605",
+        "links": [
+            "Link_3_6"
+        ]
+    },
+    {
+        "channel": "Demand_Link_3_6_697_700",
+        "links": [
+            "Link_3_6"
+        ]
+    },
+    {
+        "channel": "Demand_Link_3_11_94_105",
+        "links": [
+            "Link_3_11"
+        ]
+    },
+    {
+        "channel": "Demand_Link_3_11_379_406",
+        "links": [
+            "Link_3_11"
+        ]
+    },
+    {
+        "channel": "Demand_Link_3_11_112_163",
+        "links": [
+            "Link_3_11"
+        ]
+    },
+    {
+        "channel": "Demand_Link_3_11_600_647",
+        "links": [
+            "Link_3_11"
+        ]
+    },
+    {
+        "channel": "Demand_Link_3_11_176_179",
+        "links": [
+            "Link_3_11"
+        ]
+    },
+    {
+        "channel": "Demand_Link_4_8_573_608",
+        "links": [
+            "Link_4_8"
+        ]
+    },
+    {
+        "channel": "Demand_Link_4_8_387_394",
+        "links": [
+            "Link_4_8"
+        ]
+    },
+    {
+        "channel": "Demand_Link_4_8_235_270",
+        "links": [
+            "Link_4_8"
+        ]
+    },
+    {
+        "channel": "Demand_Link_4_8_358_361",
+        "links": [
+            "Link_4_8"
+        ]
+    },
+    {
+        "channel": "Demand_Link_4_8_478_533",
+        "links": [
+            "Link_4_8"
+        ]
+    },
+    {
+        "channel": "Demand_Link_4_10_392_471",
+        "links": [
+            "Link_4_10"
+        ]
+    },
+    {
+        "channel": "Demand_Link_4_10_244_247",
+        "links": [
+            "Link_4_10"
+        ]
+    },
+    {
+        "channel": "Demand_Link_4_10_496_499",
+        "links": [
+            "Link_4_10"
+        ]
+    },
+    {
+        "channel": "Demand_Link_4_10_718_721",
+        "links": [
+            "Link_4_10"
+        ]
+    },
+    {
+        "channel": "Demand_Link_5_8_638_729",
+        "links": [
+            "Link_5_8"
+        ]
+    },
+    {
+        "channel": "Demand_Link_5_8_268_327",
+        "links": [
+            "Link_5_8"
+        ]
+    },
+    {
+        "channel": "Demand_Link_5_8_430_437",
+        "links": [
+            "Link_5_8"
+        ]
+    },
+    {
+        "channel": "Demand_Link_5_10_198_253",
+        "links": [
+            "Link_5_10"
+        ]
+    },
+    {
+        "channel": "Demand_Link_5_10_8_87",
+        "links": [
+            "Link_5_10"
+        ]
+    },
+    {
+        "channel": "Demand_Link_5_10_313_324",
+        "links": [
+            "Link_5_10"
+        ]
+    },
+    {
+        "channel": "Demand_Link_5_10_714_721",
+        "links": [
+            "Link_5_10"
+        ]
+    },
+    {
+        "channel": "Demand_Link_5_10_121_144",
+        "links": [
+            "Link_5_10"
+        ]
+    },
+    {
+        "channel": "Demand_Link_5_10_434_437",
+        "links": [
+            "Link_5_10"
+        ]
+    },
+    {
+        "channel": "Demand_Link_6_10_535_630",
+        "links": [
+            "Link_6_10"
+        ]
+    },
+    {
+        "channel": "Demand_Link_6_10_460_479",
+        "links": [
+            "Link_6_10"
+        ]
+    },
+    {
+        "channel": "Demand_Link_6_10_511_522",
+        "links": [
+            "Link_6_10"
+        ]
+    },
+    {
+        "channel": "Demand_Link_6_10_398_401",
+        "links": [
+            "Link_6_10"
+        ]
+    },
+    {
+        "channel": "Demand_Link_6_11_341_344",
+        "links": [
+            "Link_6_11"
+        ]
+    },
+    {
+        "channel": "Demand_Link_6_11_463_486",
+        "links": [
+            "Link_6_11"
+        ]
+    },
+    {
+        "channel": "Demand_Link_6_11_629_632",
+        "links": [
+            "Link_6_11"
+        ]
+    },
+    {
+        "channel": "Demand_Link_6_11_84_167",
+        "links": [
+            "Link_6_11"
+        ]
+    },
+    {
+        "channel": "Demand_Link_6_11_393_456",
+        "links": [
+            "Link_6_11"
+        ]
+    },
+    {
+        "channel": "Demand_Link_6_11_315_334",
+        "links": [
+            "Link_6_11"
+        ]
+    },
+    {
+        "channel": "Demand_Link_7_9_377_396",
+        "links": [
+            "Link_7_9"
+        ]
+    },
+    {
+        "channel": "Demand_Link_7_9_464_483",
+        "links": [
+            "Link_7_9"
+        ]
+    },
+    {
+        "channel": "Demand_Link_7_9_28_55",
+        "links": [
+            "Link_7_9"
+        ]
+    },
+    {
+        "channel": "Demand_Link_7_9_217_268",
+        "links": [
+            "Link_7_9"
+        ]
+    },
+    {
+        "channel": "Demand_Link_7_9_173_184",
+        "links": [
+            "Link_7_9"
+        ]
+    },
+    {
+        "channel": "Demand_Link_7_9_505_524",
+        "links": [
+            "Link_7_9"
+        ]
+    },
+    {
+        "channel": "Demand_Link_7_11_617_652",
+        "links": [
+            "Link_7_11"
+        ]
+    },
+    {
+        "channel": "Demand_Link_7_11_237_268",
+        "links": [
+            "Link_7_11"
+        ]
+    },
+    {
+        "channel": "Demand_Link_7_11_381_384",
+        "links": [
+            "Link_7_11"
+        ]
+    },
+    {
+        "channel": "Demand_Link_7_11_752_755",
+        "links": [
+            "Link_7_11"
+        ]
+    },
+    {
+        "channel": "Demand_Link_0_5_78_149",
+        "links": [
+            "Link_0_5"
+        ]
+    },
+    {
+        "channel": "Demand_Link_0_5_656_739",
+        "links": [
+            "Link_0_5"
+        ]
+    },
+    {
+        "channel": "Demand_Link_0_5_62_65",
+        "links": [
+            "Link_0_5"
+        ]
+    },
+    {
+        "channel": "Demand_Link_0_5_225_232",
+        "links": [
+            "Link_0_5"
+        ]
+    },
+    {
+        "channel": "Demand_Link_0_5_621_624",
+        "links": [
+            "Link_0_5"
+        ]
+    },
+    {
+        "channel": "Demand_Link_0_5_373_376",
+        "links": [
+            "Link_0_5"
+        ]
+    }
+]
+
+    const map = L.map("map").setView([AVERAGELAT, AVERAGELONG], 6)
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(map)
+
+    const nodeMarkers = {}
+    NODES.forEach((node) => {
+        nodeMarkers[node.id] = L.circleMarker([node.lat, node.lng], {
+            radius: 8,
+            color: "#008BF8",
+        })
+            .addTo(map)
+            .bindPopup(`Lat: ${node.lat.toFixed(4)} <br> Lgn: ${node.lng.toFixed(4)} <br> ID: ${node.id}`)
+    })
+
+    const amplifierMarkers = {};
+    AMPLIFIERS.forEach((amp) => {
+        amplifierMarkers[amp.name.trim()] = amp;
+        L.circleMarker([amp.lat, amp.lng], {
+            radius: 6,
+            color: "#ffc800",
+            fillOpacity: 1
+        })
+            .addTo(map)
+            .bindPopup(`Name: ${amp.name} <br> Lat: ${amp.lat.toFixed(4)} <br> Lgn: ${amp.lng.toFixed(4)} <br> OSNR: ${amp.OSNR} `)
+    })
+
+    let polylines = {};
+
+    LINKS.forEach((link) => {
+        const fromNode = nodeMarkers[link.from];
+        const toNode = nodeMarkers[link.to];
+
+        if (!fromNode || !toNode) return;
+
+        const pathCoords = [];
+        pathCoords.push([fromNode.getLatLng().lat, fromNode.getLatLng().lng]);
+
+        link.amplifiers.forEach((ampName) => {
+            const amp = amplifierMarkers[ampName.trim()];
+            if (amp) {
+                pathCoords.push([amp.lat, amp.lng]);
+            }
+        });
+
+        pathCoords.push([toNode.getLatLng().lat, toNode.getLatLng().lng]);
+
+        const polyline = L.polyline(pathCoords, {
+            color: "green",
+            weight: 7,
+            opacity: 0.2 + link.percentage / 125,
+        }).addTo(map);
+
+        polylines[link.id] = polyline;
+
+        polyline.bindTooltip(`${link.percentage}%`, {
+            permanent: true,
+        });
+
+        polyline.on("click", () => {
+            const infoBox = document.getElementById("info-box")
+
+            infoBox.innerHTML = ""
+
+            const titleBox = document.createElement("div")
+            titleBox.style.padding = "5px"
+            const title = document.createElement("strong")
+            title.textContent = link.id + " Link Usage:"
+            titleBox.appendChild(title)
+            infoBox.appendChild(titleBox)
+
+            const tableBox = document.createElement("div")
+            tableBox.className = "table-box"
+
+            const table = document.createElement("table")
+            const thead = document.createElement("thead")
+            table.appendChild(thead)
+
+            const tbody = document.createElement("tbody")
+            const slicesRow = document.createElement("tr")
+            const demandsRow = document.createElement("tr")
+
+            const slicesCell = document.createElement("td")
+            slicesCell.textContent = "Slices"
+            slicesCell.style.fontWeight = "bold"
+            slicesRow.appendChild(slicesCell)
+
+            const demandsCell = document.createElement("td")
+            demandsCell.textContent = "Demands"
+            demandsCell.style.fontWeight = "bold"
+            demandsRow.appendChild(demandsCell)
+
+            link.info.forEach((item) => {
+                const cellSlices = document.createElement("td")
+                cellSlices.textContent = item.slices
+
+                const cellDemand = document.createElement("td")
+                cellDemand.textContent = item.demand
+
+                slicesRow.appendChild(cellSlices)
+                demandsRow.appendChild(cellDemand)
+            })
+            tbody.appendChild(slicesRow)
+            tbody.appendChild(demandsRow)
+
+            table.appendChild(tbody)
+
+            tableBox.appendChild(table)
+            infoBox.appendChild(tableBox)
+        })
+    })
+
+    let currentSelectedChannel = null;
+
+    channelsDiv = document.getElementById("channels");
+    h2Title = document.createElement("h2")
+    h2Title.innerHTML = "Demands (Channels)"
+    channelsDiv.appendChild(h2Title)
+
+    const searchInput = document.createElement("input");
+    searchInput.type = "text";
+    searchInput.placeholder = "Search...";
+    channelsDiv.appendChild(searchInput);
+
+    channelsList = document.createElement("ul")
+    CHANNELS.forEach((channel) => {
+        channelLi = document.createElement("li")
+        channelButton = document.createElement("button")
+        channelSpan = document.createElement("span")
+        channelSpan.innerHTML = channel.channel
+        channelButton.appendChild(channelSpan)
+
+        channelButton.addEventListener("click", function () {
+            if (currentSelectedChannel && currentSelectedChannel.channel === channel.channel) {
+                changeLinkColors(channel.links, 'green')
+                currentSelectedChannel = null
+            } else {
+                if (currentSelectedChannel) {
+                    changeLinkColors(currentSelectedChannel.links, 'green');
+                }
+                changeLinkColors(channel.links, 'red')
+                currentSelectedChannel = channel
+            }
+        });
+
+        channelLi.appendChild(channelButton)
+        channelsList.appendChild(channelLi)
+    })
+    channelsDiv.appendChild(channelsList)
+
+    function renderChannels(filterText = "") {
+  channelsList.innerHTML = ""; // clear list
+  CHANNELS.forEach((channel) => {
+    if (channel.channel.toLowerCase().includes(filterText.toLowerCase())) {
+      const channelLi = document.createElement("li");
+      const channelButton = document.createElement("button");
+      const channelSpan = document.createElement("span");
+      channelSpan.innerHTML = channel.channel;
+      channelButton.appendChild(channelSpan);
+
+      channelButton.addEventListener("click", function () {
+        if (currentSelectedChannel && currentSelectedChannel.channel === channel.channel) {
+          changeLinkColors(channel.links, "green");
+          currentSelectedChannel = null;
+        } else {
+          if (currentSelectedChannel) {
+            changeLinkColors(currentSelectedChannel.links, "green");
+          }
+          changeLinkColors(channel.links, "red");
+          currentSelectedChannel = channel;
+        }
+      });
+
+      channelLi.appendChild(channelButton);
+      channelsList.appendChild(channelLi);
+    }
+  });
+}
+
+// Initial render with no filter
+renderChannels();
+
+// Filter channels when typing
+searchInput.addEventListener("input", (e) => {
+  renderChannels(e.target.value);
+});
+
+    function changeLinkColors(linkIds, color) {
+        linkIds.forEach((linkId) => {
+            const link = LINKS.find(l => l.id === linkId);
+
+            if (link && polylines[link.id]) {
+                const polyline = polylines[link.id];
+                polyline.setStyle({color: color});
+            }
+        });
+    }
+
+</script>
+</body>
+</html>

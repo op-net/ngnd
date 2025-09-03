@@ -1,54 +1,43 @@
-import { Box, Typography, Paper, List, ListItem, ListItemText, Link } from "@mui/material";
-import Sidebar from "./Sidebar";
+import { Box, Typography, Paper, List, ListItem, ListItemText } from "@mui/material";
 
 const Contributors = () => {
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh" }}>
-      <Sidebar />
-      <Box p={4} width="100%" sx={{ flexGrow: 1 }}>
-        <Typography variant="h3" component="h1" gutterBottom>
+    <Box sx={{ display: "flex", width: "100%" }}>
+      <Box p={4} sx={{ flexGrow: 1 }}>
+        <Typography variant="h3" component="h1" gutterBottom sx={{
+          fontFamily: "'DejaVu Sans Mono', monospace",
+          color: "#333",
+        }}>
           Contributors
         </Typography>
+        <Box sx={{ width: "fit-content" }}>
+          <Typography variant="body1" paragraph>
+            The Next Generation Networks Design Database is built and maintained by an international team of researchers and students:
+          </Typography>
 
-        <Typography variant="body1" paragraph>
-          The Next Generation Networks Design Database is built and maintained by an international team of researchers and students:
-        </Typography>
-
-        <Paper elevation={2} sx={{ p: 3, mb: 4 }}>
-          <List>
-            <ListItem>
-              <ListItemText
-                primary="Miguel Mendoza"
-                secondary="Universidad Politécnica de Madrid — OSNR & distance data integration"
-              />
-            </ListItem>
-            <Typography component="span">
-    Universidad Politécnica de Madrid — 
-    <Link href="mailto:m.mlarranaga@alumnos.upm.es">m.mlarranaga@alumnos.upm.es</Link>
-  </Typography>
-            <ListItem>
-              <ListItemText
-                primary="Nel Kulakowska"
-                secondary="Warsaw University of Technology — Math Algorithm design, Web page development and data validation"
-                
-              />
-              <Typography component="span">
-    Warsaw University of Technology — 
-    <Link href="mailto:nel.kulakowska.stud@pw.edu.pl">nel.kulakowska.stud@pw.edu.pl</Link>
-  </Typography>
-            </ListItem>
-            <ListItem>
-              <ListItemText
-                primary="Stanislaw Kozdrowski"
-                secondary="Supervisor, Warsaw University of Technology — Project oversight, optical network modeling review"
-              />
-              <Typography component="span">
-    Warsaw University of Technology — 
-    <Link href="mailto:stanislaw.kozdrowski@pw.edu.pl">stanislaw.kozdrowski@pw.edu.pl</Link>
-  </Typography>
-            </ListItem>
-          </List>
-        </Paper>
+          <Paper elevation={2} sx={{ p: 3, mb: 4 }}>
+            <List>
+              <ListItem>
+                <ListItemText
+                  primary="Miguel Mendoza"
+                  secondary="Universidad Politécnica de Madrid — Front-end development, OSNR & distance data integration, documentation"
+                />
+              </ListItem>
+              <ListItem>
+                <ListItemText
+                  primary="Nel Kulakowska"
+                  secondary="Warsaw University of Technology — Network topology template design, data validation, architectural guidance"
+                />
+              </ListItem>
+              <ListItem>
+                <ListItemText
+                  primary="Stanislaw Kozdrowski"
+                  secondary="Supervisor, Warsaw University of Technology — Project oversight, optical network modeling review"
+                />
+              </ListItem>
+            </List>
+          </Paper>
+        </Box>
 
         <Typography variant="body2" color="text.secondary">
           We welcome additional contributors and feedback. Please reach out via the contact details on the main page.
