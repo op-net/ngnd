@@ -9,14 +9,17 @@ function DatabaseInfo() {
 
       <Typography variant="body1" color="text.secondary" paragraph>
         The database has been developed through collaboration between Nel Kulakowska from{' '}
-        <a href="https://zsut.tele.pw.edu.pl/" target="_blank" rel="noopener noreferrer">
+        <a href="https://www.pw.edu.pl/" target="_blank" rel="noopener noreferrer">
           Warsaw University of Technology
         </a>{' '}
         and Miguel Mendoza from{' '}
         <a href="https://www.upm.es/" target="_blank" rel="noopener noreferrer">
           Universidad Politécnica de Madrid
         </a>
-        , under the supervision of Stanislaw Kozdrowski from Warsaw University of Technology.
+        , under the supervision of Stanislaw Kozdrowski from{' '}
+        <a href="https://www.pw.edu.pl/" target="_blank" rel="noopener noreferrer">
+          Warsaw University of Technology
+        </a>{' '}.
       </Typography>
 
       <Typography variant="body1" color="text.secondary" paragraph>
