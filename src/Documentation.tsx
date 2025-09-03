@@ -54,6 +54,12 @@ const Documentation = () => {
                             />
                         </ListItem>
                         <ListItem>
+                        <ListItemText 
+                                primary="Mux/Demux Loss (Lm)" 
+                                secondary="Set to 10 dB - insertion loss from multiplexing/demultiplexing equipment"
+                        />
+                        </ListItem>
+                        <ListItem>
                             <ListItemText
                                 primary="Output Power (Pout)"
                                 secondary="Set to 1 dBm - standard transmission power level"
@@ -86,10 +92,10 @@ const Documentation = () => {
                     </List>
                 </Paper>
 
-                {/* Distance Selection Section */}
+                {/* Amplifier location Section */}
                 <Paper elevation={2} sx={{ p: 3, mb: 4 }}>
                     <Typography variant="h4" component="h2" gutterBottom>
-                        Distance Selection Criteria
+                        Amplifier Location Criteria
                     </Typography>
                     <Typography variant="body1" paragraph>
                         The link distances used in our database represent realistic fiber optic network
