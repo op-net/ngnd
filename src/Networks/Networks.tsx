@@ -11,23 +11,23 @@ const renderNetworkList = (
 ) => (
   <Paper elevation={2} sx={{ p: 3, mb: 4 }}>
     <Typography gutterBottom>
-      We offer a selection of networks visualized as graphs, each illustrating various usage scenarios. 
-      The primary scenarios represent around 45% of total usage. The data can be downloaded in XML or JSON format. 
+      We offer a selection of networks visualized as graphs, each illustrating various usage scenarios.
+      The primary scenarios represent around 45% of total usage. The data can be downloaded in XML or JSON format.
       Each network is also represented graphically by HTML files.
     </Typography>
     <Box display="flex" flexDirection="column" gap={1} mt={2}>
       {networks.map((network, index) => (
         <Button
           key={index}
-          variant="outlined" 
+          variant="outlined"
           sx={{
             width: "fit-content",
             color: '#4fa944',
             borderColor: '#4fa944',
-            borderRadius: 2, 
-            justifyContent: 'flex-start', 
+            borderRadius: 2,
+            justifyContent: 'flex-start',
             textTransform: 'none',
-            px: 2, 
+            px: 2,
             '&:hover': {
               borderColor: '#3e8537',
               backgroundColor: '#e6f4e6',
@@ -52,7 +52,7 @@ const Networks = () => {
   }, []);
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh" }}>
+    <Box sx={{ display: "flex" }}>
       <Box p={4} width={"100%"} sx={{ flexGrow: 1 }}>
         {selectedNetwork ? (
           <NetworkDetails
@@ -61,7 +61,10 @@ const Networks = () => {
           />
         ) : (
           <>
-            <Typography variant="h3" component="h1" gutterBottom>
+            <Typography variant="h3" component="h1" gutterBottom sx={{
+              fontFamily: "'DejaVu Sans Mono', monospace",
+              color: "#333",
+            }}>
               Networks
             </Typography>
             {renderNetworkList(networks, setSelectedNetwork)}

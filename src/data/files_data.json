@@ -23,8 +23,28 @@
         ],
         "examples": [
             {
-                "description": "Example 1",
-                "pngFile": "polska_ampl.png"
+                "description": "Convergence analysis for two heuristic methods: an evolutionary algorithm and a harmony search algorithm for a 1000 Gbps demand between Kołobrzeg and Rzeszów using 36 shortest paths. The curve is the average of 20 individual runs.",
+                "pngFile": "polska_KoR_all.txt_convergence.png"
+            },
+            {
+                "description": "Analysis with confidence intervals for two heuristic methods: an evolutionary algorithm and a harmony search algorithm and also MIP for reference (language: AMPL, solver: CPLEX). Done for a 1000 Gbps demand between Kołobrzeg and Rzeszów using 36 shortest paths. Summarizes 20 individual runs.",
+                "pngFile": "polska_KoR_all.txt_summary.png"
+            },
+            {
+                "description": "Analysis of the impact of the number of paths on the convergence of the evolutionary method a 1000 Gbps demand between Kołobrzeg and Rzeszów. The curve is the average of 10 individual runs.",
+                "pngFile": "polska_KoR_EV_pth.txt_convergence.png"
+            },
+            {
+                "description": "Analysis of the impact of the number of paths on the performance of the evolutionary method a 1000 Gbps demand between Kołobrzeg and Rzeszów. Summarizes 10 individual runs.",
+                "pngFile": "polska_KoR_EV_pth.txt_summary.png"
+            },
+            {
+                "description": "Analysis of the impact of the number of paths on the convergence of the harmony search method a 1000 Gbps demand between Kołobrzeg and Rzeszów. The curve is the average of 10 individual runs.",
+                "pngFile": "polska_KoR_HS_pth.txt_convergence.png"
+            },
+            {
+                "description": "Analysis of the impact of the number of paths on the performance of the harmony search method a 1000 Gbps demand between Kołobrzeg and Rzeszów. Summarizes 10 individual runs.",
+                "pngFile": "polska_KoR_HS_pth.txt_summary.png"
             }
         ]
     },
@@ -50,7 +70,14 @@
                 "htmlFile": "nobel_eu_80.html"
             }
         ],
-        "examples": []
+        "examples": [{
+                "description": "Convergence analysis for two heuristic methods: an evolutionary algorithm and a harmony search algorithm for a 1000 Gbps demand between Oslo and Belgrade using 100 shortest paths. The curve is the average of 20 individual runs.",
+                "pngFile": "eu_OB_all.txt_convergence.png"
+            },
+            {
+                "description": "Analysis with confidence intervals for two heuristic methods: an evolutionary algorithm and a harmony search algorithm and also MIP for reference (language: AMPL, solver: CPLEX). Done for a 1000 Gbps demand between Oslo and Belgrade using 100 shortest paths. Summarizes 20 individual runs.",
+                "pngFile": "eu_OB_all.txt_summary.png"
+            }]
     },
     {
         "networkName": "janos us ca",
@@ -74,9 +101,34 @@
                 "htmlFile": "janos_us_ca_80.html"
             }
         ],
-        "examples": []
+        "examples": [
+            {
+                "description": "Convergence analysis for two heuristic methods: an evolutionary algorithm and a harmony search algorithm for a 1000 Gbps demand between Vancouver and Boston using 100 shortest paths. The curve is the average of 20 individual runs.",
+                "pngFile": "usa_VaBo_all.txt_convergence.png"
+            },
+            {
+                "description": "Analysis with confidence intervals for two heuristic methods: an evolutionary algorithm and a harmony search algorithm and also MIP for reference (language: AMPL, solver: CPLEX). Done for a 1000 Gbps demand between Vancouver and Boston using 100 shortest paths. Summarizes 20 individual runs.",
+                "pngFile": "usa_VaBo_all.txt_summary.png"
+            },
+            {
+                "description": "Analysis of the impact of the number of paths on the convergence of the evolutionary method a 1000 Gbps demand between Vancouver and Atlanta. The curve is the average of 10 individual runs.",
+                "pngFile": "usa_VaAt_EV_pth.txt_convergence.png"
+            },
+            {
+                "description": "Analysis of the impact of the number of paths on the performance of the evolutionary method a 1000 Gbps demand between Vancouver and Atlanta. Summarizes 10 individual runs.",
+                "pngFile": "usa_VaAt_EV_pth.txt_summary.png"
+            },
+            {
+                "description": "Analysis of the impact of the number of paths on the convergence of the harmony search method a 1000 Gbps demand between Vancouver and Atlanta. The curve is the average of 10 individual runs.",
+                "pngFile": "usa_VaAt_HS_pth.txt_convergence.png"
+            },
+            {
+                "description": "Analysis of the impact of the number of paths on the performance of the harmony search method a 1000 Gbps demand between Vancouver and Atlanta. Summarizes 10 individual runs.",
+                "pngFile": "usa_VaAt_HS_pth.txt_summary.png"
+            }
+        ]
     },
-     {
+    {
         "networkName": "germany50",
         "nodesNumber": 50,
         "linksNumber": 88,
@@ -98,6 +150,15 @@
                 "htmlFile": "germany50_80.html"
             }
         ],
-        "examples": []
+        "examples": [
+            {
+                "description": "Convergence analysis for two heuristic methods: an evolutionary algorithm and a harmony search algorithm for a 1000 Gbps demand between Aachen and Braunschweig using 100 shortest paths. The curve is the average of 20 individual runs.",
+                "pngFile": "germ_AB_all.txt_convergence.png"
+            },
+            {
+                "description": "Analysis with confidence intervals for two heuristic methods: an evolutionary algorithm and a harmony search algorithm and also MIP for reference (language: AMPL, solver: CPLEX). Done for a 1000 Gbps demand between Aachen and Braunschweig using 100 shortest paths. Summarizes 20 individual runs.",
+                "pngFile": "germ_AB_all.txt_summary.png"
+            }
+        ]
     }
 ]

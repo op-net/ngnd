@@ -14,14 +14,17 @@ const NetworkDetails: React.FC<NetworkDetailsProps> = ({ network, onBack }) => {
             <Button sx={{ mt: 2, mb: 2, color: "#4fa944ff" }} onClick={onBack}>
                 ← Back to list
             </Button>
-            <Typography variant="h4" gutterBottom>
+            <Typography variant="h4" gutterBottom sx={{
+                fontFamily: "'DejaVu Sans Mono', monospace",
+                color: "#333",
+            }}>
                 {network.networkName}
             </Typography>
             <Typography
                 sx={{
                     fontWeight: 'bold',
                     fontSize: "14pt",
-                    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+                    fontFamily: '"Courier New", serif',
                     color: '#333',
                     display: 'flex',
                     alignItems: 'center',
@@ -169,31 +172,31 @@ const NetworkDetails: React.FC<NetworkDetailsProps> = ({ network, onBack }) => {
                 </Box>
             </Paper>
 
-            <Paper elevation={2} sx={{ p: 3, mb: 4}}>
+            <Paper elevation={2} sx={{ p: 3, mb: 4 }}>
                 <Box >
                     <Typography variant="h6">Examples of Usage</Typography>
                     <Table>
-  <TableBody>
-    {network.examples.map((example, index) => (
-      <TableRow key={index}>
-        <TableCell style={{ width: "100%", verticalAlign: "top" }}>
-          <Box display="flex" flexDirection="column" gap={1}>
-            <img
-              src={`${homepage_url}/${network.folderPath}/${example.pngFile}`}
-              alt={example.pngFile}
-              style={{
-                width: "50%",
-                height: "auto",
-                objectFit: "contain",
-              }}
-            />
-            <Typography>{example.description}</Typography>
-          </Box>
-        </TableCell>
-      </TableRow>
-    ))}
-  </TableBody>
-</Table>
+                        <TableBody>
+                            {network.examples.map((example, index) => (
+                                <TableRow key={index}>
+                                    <TableCell style={{ width: "100%", verticalAlign: "top" }}>
+                                        <Box display="flex" flexDirection="column" gap={1}>
+                                            <img
+                                                src={`${homepage_url}/${network.folderPath}/${example.pngFile}`}
+                                                alt={example.pngFile}
+                                                style={{
+                                                    width: "50%",
+                                                    height: "auto",
+                                                    objectFit: "contain",
+                                                }}
+                                            />
+                                            <Typography>{example.description}</Typography>
+                                        </Box>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
 
                 </Box>
             </Paper>

@@ -41,7 +41,10 @@ const HomePage = () => {
     <Box sx={{ display: "flex" }}>
 
       <Box component="main" sx={{ flexGrow: 1, p: 4 }}>
-        <Typography variant="h3" gutterBottom>
+        <Typography variant="h3" gutterBottom sx={{
+          fontFamily: "'DejaVu Sans Mono', monospace",
+          color: "#333",
+        }}>
           Welcome to Next Generation Network Design database.
         </Typography>
         <DatabaseInfo />
