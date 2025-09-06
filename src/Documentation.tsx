@@ -49,26 +49,14 @@ const Documentation = () => {
                     <List>
                         <ListItem>
                             <ListItemText
-                                primary="Fiber Loss (Lf)"
-                                secondary="Calculated as 0.25 × distance (dB/km) - represents attenuation through optical fiber"
-                            />
-                        </ListItem>
-                        <ListItem>
-                        <ListItemText 
-                                primary="Mux/Demux Loss (Lm)" 
-                                secondary="Set to 10 dB - insertion loss from multiplexing/demultiplexing equipment"
-                        />
-                        </ListItem>
-                        <ListItem>
-                            <ListItemText
                                 primary="Output Power (Pout)"
                                 secondary="Set to 1 dBm - standard transmission power level"
                             />
                         </ListItem>
                         <ListItem>
                             <ListItemText
-                                primary="Transmission Power (Ptx)"
-                                secondary="Set to 0 dBm - reference transmission level"
+                                primary="Fiber Loss (Lf)"
+                                secondary="Calculated as 0.25 × distance (dB/km) - represents attenuation through optical fiber"
                             />
                         </ListItem>
                         <ListItem>
@@ -79,10 +67,33 @@ const Documentation = () => {
                         </ListItem>
                         <ListItem>
                             <ListItemText
+                                primary="Transmission loss (TX)"
+                                secondary="TX = 10 * log10(1 + (10^(-Lf/10) * 10^(Pout/10)) / (10^(-Lm/10) * 10^(Ptx/10)))"
+                            />
+                        </ListItem>
+                        <ListItem>
+                        <ListItemText 
+                                primary="Mux/Demux Loss (Lm)" 
+                                secondary="Set to 10 dB - insertion loss from multiplexing/demultiplexing equipment"
+                        />
+                        </ListItem>
+                        
+                        <ListItem>
+                            <ListItemText
+                                primary="Transmission Power (Ptx)"
+                                secondary="Set to 0 dBm - reference transmission level"
+                            />
+                        </ListItem>
+                        <ListItem>
+                            <ListItemText
                                 primary="Gain Ripple (Gr)"
                                 secondary="1 dB - compensates for amplifier gain variations"
                             />
                         </ListItem>
+                        
+                        
+                        
+                        
                         <ListItem>
                             <ListItemText
                                 primary="Penalty (Pen)"
@@ -129,33 +140,6 @@ const Documentation = () => {
                     </List>
                 </Paper>
 
-                {/* Algorithm Implementation Section */}
-                <Paper elevation={2} sx={{ p: 3, mb: 4 }}>
-                    <Typography variant="h4" component="h2" gutterBottom>
-                        Algorithm Implementation
-                    </Typography>
-                    <Typography variant="body1" paragraph>
-                        Our OSNR calculation algorithm implements a comprehensive optical link budget
-                        model that accounts for both linear and nonlinear effects in fiber optic transmission.
-                    </Typography>
-
-                    <Typography variant="h6" component="h3" gutterBottom>
-                        Implementation Steps
-                    </Typography>
-                    <Paper sx={{ p: 2, backgroundColor: '#f5f5f5', fontFamily: 'monospace', mb: 2 }}>
-                        {`for each distance d in dataset:
-    Lf = 0.25 * d  // Calculate fiber loss
-    TX = 10 * log10(1 + (10^(-Lf/10) * 10^(Pout/10)) / (10^(-Lm/10) * 10^(Ptx/10)))
-    OSNR = 58 + Pout - Lf - NF - TX - Gr - Pen
-    store(distance, OSNR)`}
-                    </Paper>
-
-                    <Typography variant="body1" paragraph>
-                        The transmission penalty (TX) calculation incorporates the relationship between
-                        signal power, fiber loss, and mux/demux insertion losses to provide accurate
-                        OSNR predictions for real-world optical networks.
-                    </Typography>
-                </Paper>
 
                 {/* Data Collection Section */}
                 <Paper elevation={2} sx={{ p: 3, mb: 4 }}>

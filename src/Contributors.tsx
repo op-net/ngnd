@@ -20,21 +20,49 @@ const Contributors = () => {
               <ListItem>
                 <ListItemText
                   primary="Miguel Mendoza"
-                  secondary="Universidad Politécnica de Madrid — Front-end development, OSNR & distance data integration, documentation"
-                />
+                  secondary=
+                {
+      <>
+        <Typography component="span" variant="body2" display="block">
+          Universidad Politécnica de Madrid — Front-end development, OSNR & distance data integration, documentation
+        </Typography>
+        <Typography component="span" variant="body2" display="block">
+          m.mlarranaga@alumnos.upm.es
+        </Typography>
+                </>
+                }/>
               </ListItem>
               <ListItem>
                 <ListItemText
                   primary="Nel Kulakowska"
-                  secondary="Warsaw University of Technology — Network topology template design, data validation, architectural guidance"
+                  secondary=
+                  {
+      <>
+        <Typography component="span" variant="body2" display="block">
+          Warsaw University of Technology — Network topology template design, data validation, architectural guidance
+        </Typography>
+        <Typography component="span" variant="body2" display="block">
+          nel.kulakowska.stud@pw.edu.pl
+        </Typography>
+      </>
+    }                 
                 />
               </ListItem>
               <ListItem>
-                <ListItemText
-                  primary="Stanislaw Kozdrowski"
-                  secondary="Supervisor, Warsaw University of Technology — Project oversight, optical network modeling review"
-                />
-              </ListItem>
+  <ListItemText
+    primary="Stanislaw Kozdrowski"
+    secondary={
+      <>
+        <Typography component="span" variant="body2" display="block">
+          Supervisor, Warsaw University of Technology – Project oversight, optical network modeling review
+        </Typography>
+        <Typography component="span" variant="body2" display="block">
+          stanislaw.kozdrowski@pw.edu.pl
+        </Typography>
+      </>
+    }
+  />
+</ListItem>
             </List>
           </Paper>
         </Box>
